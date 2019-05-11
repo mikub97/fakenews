@@ -27,6 +27,8 @@ Przydatne linki :
 
 - https://github.com/cvhariharan/fake-news-detector
 
+-  countvectorizer -> https://machinelearningmastery.com/prepare-text-data-machine-learning-scikit-learn/
+
 Dane :
 
 - https://www.kaggle.com/mrisdal/fake-news
