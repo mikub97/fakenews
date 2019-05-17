@@ -9,4 +9,6 @@ out
 gen
 
 # Added by bielas
+src/twitter
+
 .json
