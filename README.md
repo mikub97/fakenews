@@ -1,5 +1,15 @@
 #fakenews
 
+##Api do twittera
++ W klasie TwitterConnection jest metoda dzieki ktorej mam dostep do api twittera
+poprzez biblioteke tweety
+
++ Do uruchomienia jej potrzebujemy pliku twitter-credentials.json ktora wylse wam na FB
+
++ Do gitignore dalem pliki json jeszcze zeby ten plik nie commitowal sie bo to sa dane do mojego(bielas) konta
+
+##inne
+
 Wrzuciłem książkę violent python  w której jest coś tam o czytaniu tweetów ( może być już nieaktualne co do tego ) oraz parsowaniu stronek z użyciem beautyful soup. Myślę, że z tego skorzystamy.
 
 Podzieliłbym projekt na 4 części
