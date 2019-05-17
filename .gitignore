@@ -9,4 +9,4 @@ out
 gen
 
 # Added by bielas
-.json
+*.json
