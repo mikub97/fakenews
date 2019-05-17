@@ -1,7 +1,8 @@
 import optparse
-import os, urllib
+import os, urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup
-from anonimBrowser import *
+
+from parseHTML.anonimBrowser import anonimBrowser
 
 
 def checkProxy(browser, printing=False):
@@ -20,9 +21,9 @@ def checkProxy(browser, printing=False):
             dict[name.text.encode('ascii', 'ignore')] = values[i].text.encode('ascii', 'ignore')
         i = i + 1
     if printing:
-        for key, val in dict.items():
+        for key, val in list(dict.items()):
             if (key.__len__() != 0):
-                print key + " - " + val
+                print((key + " - " + val))
 
     boolean = False
     for settings in browser.proxies:
@@ -43,7 +44,7 @@ def main():
     (options, args) = parser.parse_args()
     addr = options.address
     if (addr == None):
-        print(parser.usage)
+        print((parser.usage))
     else:
         hideme = {'https': addr, 'http': addr}
         ab = anonimBrowser([hideme])
@@ -51,11 +52,11 @@ def main():
         try:
             b = checkProxy(browser=ab, printing=True)
             if not b:
-                print '[-] Server Proxy is not working'
+                print('[-] Server Proxy is not working')
             else:
                 print('[+] Everything is correct. Server Proxy is working')
-        except Exception,e:
-            print '[-] Server Proxy is not working'
+        except Exception as e:
+            print('[-] Server Proxy is not working')
 
 
 if __name__ == '__main__':

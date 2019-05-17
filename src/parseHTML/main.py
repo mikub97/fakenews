@@ -1,7 +1,9 @@
 import optparse
-import os, urllib
+import os, urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup
-from anonimBrowser import *
+
+from parseHTML.anonimBrowser import anonimBrowser
+
 
 def viewPage(browser,url):
     page = browser.open(url)
@@ -14,12 +16,12 @@ def printLinks(url):
     page = ab.open(url)
     html = page.read()
     try:
-        print '\n[+] Printing Links from BeautifulSoup'
+        print('\n[+] Printing Links from BeautifulSoup')
         soup = BeautifulSoup(html,features="html5lib")
         links = soup.findAll(name='a')
         for link in links:
             if link.has_attr('href'):
-                print link['href']
+                print(link['href'])
     except:
         pass;
 
@@ -31,9 +33,9 @@ def mirrorImages(url,dir):
     image_tags = soup.findAll('img')
     for image in image_tags:
         filename = image['src'].lstrip('http://')
-        print ( image['src'])
+        print(( image['src']))
         filename = os.path.join(dir,filename.replace('/','_'))
-        print '[+] Saving '+ str(filename)
+        print('[+] Saving '+ str(filename))
         data = ab.open(image['src']).read()
         ab.back()
         save = open(filename,'wb')
@@ -56,9 +58,9 @@ def checkProxy(browser,printing=False):
             dict[name.text.encode('ascii', 'ignore')] = values[i].text.encode('ascii', 'ignore')
         i=i+1
     if printing:
-        for key, val in dict.items():
+        for key, val in list(dict.items()):
             if (key.__len__() != 0):
-                print key + " - " + val
+                print(key + " - " + val)
 
     boolean = False
     for settings in browser.proxies:
@@ -99,14 +101,14 @@ def main():
     url = options.tgtURL
     dir = options.dir
     if(url == None) or dir ==None:
-        print(parser.usage)
+        print((parser.usage))
     else:
         printLinks(url)
         try:
             mirrorImages(url,dir)
-        except Exception,e :
-            print '[-] Error Mirroring Images.'
-            print '[-] ' + str(e)
+        except Exception as e :
+            print('[-] Error Mirroring Images.')
+            print('[-] ' + str(e))
 if __name__ == '__main__':
     main()
-print checkProxy(ab)
+print(checkProxy(ab))

@@ -1,4 +1,4 @@
-import mechanize, cookielib, random, time
+import mechanize, http.cookiejar, random, time
 
 
 class anonimBrowser(mechanize.Browser):
@@ -8,11 +8,11 @@ class anonimBrowser(mechanize.Browser):
         self.proxies = proxies
         self.user_agents = useragents+['Mozilla/4.0', 'FireFox/6.01', 'ExactSearch', 'Nokia7110/1.0']
         self.change_user_agent()
-        self.set_cookiejar(cookielib.LWPCookieJar())
+        self.set_cookiejar(http.cookiejar.LWPCookieJar())
         self.change_proxy()
 
     def clear_cookies(self):
-        self.set_cookiejar(cookielib.LWPCookieJar())
+        self.set_cookiejar(http.cookiejar.LWPCookieJar())
 
     def change_user_agent(self):
         index = random.randrange(0, len(self.user_agents))
