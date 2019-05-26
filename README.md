@@ -24,6 +24,7 @@ Podzieliłbym projekt na 4 części
 
 
 Przydatne linki : 
+- PageRank extractor -> https://github.com/aablack/websearchapp/blob/master/search/rank_provider.py 
 
 - projket w pythonie -> https://github.com/nishitpatel01/Fake_News_Detection
 
