@@ -1,10 +1,10 @@
+import datetime
 import json
-import _pickle as pickle
 import os
 import re
-from textblob import TextBlob
 
 import tweepy
+from textblob import TextBlob
 
 
 class TwitterConnection:
@@ -40,13 +40,41 @@ class TwitterConnection:
         else:
             return 'neutral'
 
+    # Check if tweet is published by bot by:
+    #   if the tweet is retweeted -> not bot
+    #   if user have not ever published 10 tweets -> bot
+    #   if time between respective tweets is greater than 2 days -> bot
+    def isBot(self, tweet):
+        if tweet.retweet_count > 0:
+            return False
+        else:
+            user_name = tweet.user.screen_name
+            last_tweets = self.api.user_timeline(screen_name=user_name, count=10, tweet_mode='extended')
+            if len(last_tweets) < 10:
+                return True
+            else:
+                for idx, tweet in enumerate(last_tweets):
+                    if idx > 0:
+                        current_tweet_date = last_tweets[idx].created_at
+                        tweet_date = last_tweets[idx-1].created_at
+                        two_days = datetime.timedelta(days=2)
+                        if (tweet_date - current_tweet_date) > two_days:
+                            return True
+            return False
+
     def getTweets(self, query, count=20):
         tweets = []
         try:
             fetched_tweets = self.api.search(q=query, count=count)
 
             for tweet in fetched_tweets:
-                parsed_tweet = {'text': tweet.text, 'sentiment': self.getTweetSentiment(tweet)}
+                username = tweet.user.screen_name
+                parsed_tweet = {'username': tweet.user.screen_name,
+                                'retweets': tweet.retweet_count,
+                                'isBot': self.isBot(tweet),
+                                'text': tweet.text,
+                                'sentiment': self.getTweetSentiment(tweet),
+                                }
                 # appending parsed tweet to tweets list
                 if tweet.retweet_count > 0:
                     # if tweet has retweets, ensure that it is appended only once
@@ -59,13 +87,25 @@ class TwitterConnection:
         except tweepy.TweepError as e:
             print("Error: " + str(e))
 
+    def proba(self):
+        print("------------------")
+
+        elo = self.api.user_timeline(screen_name="mamastarlight")
+        siema = [tweet for tweet in elo]
+        for tweet in siema:
+            print(tweet)
+
+        print("------------------")
+
 
 def main():
     # TwitterConncection object
     api = TwitterConnection()
 
-    # Count specifies max number of results
-    tweets = api.getTweets(query="Donald Trump", count=10)
+    api.proba()
+
+    # Count specifies max number of results for mentioning "Donald Trump"
+    tweets = api.getTweets(query="Donald Trump", count=100)
 
     # Picking positive tweets from tweets
     ptweets = [tweet for tweet in tweets if tweet['sentiment'] == 'positive']
