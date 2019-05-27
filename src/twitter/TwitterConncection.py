@@ -4,6 +4,7 @@ import os
 import re
 
 import tweepy
+from mechanize import urlopen
 from textblob import TextBlob
 
 
@@ -32,7 +33,7 @@ class TwitterConnection:
                                tweet).split())
 
     def getTweetSentiment(self, tweet):
-        analysis = TextBlob(tweet.text)
+        analysis = TextBlob(tweet.full_text)
         if analysis.sentiment.polarity > 0:
             return 'positive'
         elif analysis.sentiment.polarity < 0:
@@ -56,23 +57,38 @@ class TwitterConnection:
                 for idx, tweet in enumerate(last_tweets):
                     if idx > 0:
                         current_tweet_date = last_tweets[idx].created_at
-                        tweet_date = last_tweets[idx-1].created_at
+                        tweet_date = last_tweets[idx - 1].created_at
                         two_days = datetime.timedelta(days=2)
                         if (tweet_date - current_tweet_date) > two_days:
                             return True
             return False
 
+    # todo
+    def is_tweet_safe_based_on_external_urls(self, tweet):
+
+        full_text = tweet.full_text
+        #todo zle czyszczenie napisu
+        urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', full_text)
+        if len(urls) > 0:
+            for url in urls:
+                http_code = urlopen(url).code
+                if (http_code / 100) >= 4:
+                    return False
+
     def getTweets(self, query, count=20):
+
+
         tweets = []
         try:
-            fetched_tweets = self.api.search(q=query, count=count)
+            fetched_tweets = self.api.search(q=query, count=count, tweet_mode='extended')
 
             for tweet in fetched_tweets:
                 username = tweet.user.screen_name
                 parsed_tweet = {'username': tweet.user.screen_name,
                                 'retweets': tweet.retweet_count,
                                 'isBot': self.isBot(tweet),
-                                'text': tweet.text,
+                                'safeUrls': self.is_tweet_safe_based_on_external_urls(tweet),
+                                'text': tweet.full_text,
                                 'sentiment': self.getTweetSentiment(tweet),
                                 }
                 # appending parsed tweet to tweets list
@@ -82,27 +98,16 @@ class TwitterConnection:
                         tweets.append(parsed_tweet)
                 else:
                     tweets.append(parsed_tweet)
+
             return tweets
 
         except tweepy.TweepError as e:
             print("Error: " + str(e))
 
-    def proba(self):
-        print("------------------")
-
-        elo = self.api.user_timeline(screen_name="mamastarlight")
-        siema = [tweet for tweet in elo]
-        for tweet in siema:
-            print(tweet)
-
-        print("------------------")
-
 
 def main():
     # TwitterConncection object
     api = TwitterConnection()
-
-    api.proba()
 
     # Count specifies max number of results for mentioning "Donald Trump"
     tweets = api.getTweets(query="Donald Trump", count=100)
@@ -116,14 +121,6 @@ def main():
     # Percentage of them
     print("Negative tweets percentage: {}%".format(100 * len(ntweets) / len(tweets)))
 
-    # Printing first 5 positive tweets
-    print("\n\nPositive tweets:")
-    for tweet in ptweets[:10]:
-        print(tweet['text'])
-    # Printing first 5 negative tweets
-    print("\n\nNegative tweets:")
-    for tweet in ntweets[:10]:
-        print(tweet['text'])
 
     # saving tweets to .json files in 'tweets' directory:
     path = os.path.dirname(__file__)
@@ -134,6 +131,14 @@ def main():
         with open(os.path.join(path, 'tweet{}.json'.format(idx)), 'w') as output:
             output.write(json.dumps(tweet))
 
+    # Retrieving tweets from files
+    # parameter: number of tweets
+    for idx in range(0, len(tweets)):
+        filename = 'tweets/tweet' + str(idx) + '.json'
+        with open(filename) as json_file:
+            data = json.load(json_file)
+            print('tweet ' + str(idx) + ': ')
+            print(data)
 
 if __name__ == '__main__':
     main()
