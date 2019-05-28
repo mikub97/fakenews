@@ -3,8 +3,8 @@ import datetime
 import requests
 from textblob import TextBlob
 
-from TwitterConncection import TwitterConnection
-from twitter.UrlMachineLearner import UrlMachineLearner
+from src.TwitterConncection import TwitterConnection
+from src.twitter.UrlMachineLearner import UrlMachineLearner
 
 
 class BotChecker:

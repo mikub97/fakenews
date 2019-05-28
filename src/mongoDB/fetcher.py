@@ -1,8 +1,6 @@
 import re
 
-from src.static.Cleaner import clearTweetJson
 import pymongo
-import json
 
 class Fetcher():
     def __init__(self):
@@ -14,12 +12,16 @@ class Fetcher():
     def get_tweet(self,id):
         return self.tweets.find_one({'id':id})
 
+
     def get_user(self,screen_name):
         return self.users.find_one({'screen_name':screen_name})
 
     def get_author_of_tweet(self,id):
         tweet = self.get_tweet(id)
         return self.users.find_one({'screen_name':tweet['screen_name']})
+
+    def get_replies(self, id):
+        return self.tweets.find({'in_reply_to_status_id':id})
 
     def print_stats(self):
         print("There are " + self.users.count().__str__() + " users in db")
