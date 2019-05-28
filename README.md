@@ -1,27 +1,14 @@
 #fakenews
 
 ##Api do twittera
-+ W klasie TwitterConnection jest metoda dzieki ktorej mam dostep do api twittera
-poprzez biblioteke tweety
+W klasie TwitterConnection jest atrybut api do twittera poprzez biblioteke tweepy
 
-+ Do uruchomienia jej potrzebujemy pliku twitter-credentials.json ktora wylse wam na FB
++ Do uruchomienia jej potrzebujemy pliku twitter-credentials.json ktora wylse wam na FB. Wsadzamy go do /resources/
 
 + Do gitignore dalem pliki json jeszcze zeby ten plik nie commitowal sie bo to sa dane do mojego(bielas) konta
 
-##inne
-
-Wrzuciłem książkę violent python  w której jest coś tam o czytaniu tweetów ( może być już nieaktualne co do tego ) oraz parsowaniu stronek z użyciem beautyful soup. Myślę, że z tego skorzystamy.
-
-Podzieliłbym projekt na 4 części
-
-1. Zebranie danych do uczenia nadzorowanego + wytrenowanie odpowiedniego modelu
-
-2. Znalezienie sposobu na "potwierdzenie" newsa, tzn. zweryfikowanie go przeszukując internet
-
-3. Połączenie wyniku z 1 i 2 oraz wypracowanie odpowiedzi na pytanie fake or not ?
-
-4. Testy
-
+Dokumentacja ( link umożliwia tylko wyświetlanie, więc podajcie maile to was dodam do edycji ) :
+https://docs.google.com/document/d/1WuP45YpfjxqyZbNAFnbzWICVt7ftB1hCSw-E8Wq9o8w/edit?usp=sharing
 
 Przydatne linki : 
 - PageRank extractor -> https://github.com/aablack/websearchapp/blob/master/search/rank_provider.py 
