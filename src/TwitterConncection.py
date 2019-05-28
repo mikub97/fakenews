@@ -12,7 +12,7 @@ class TwitterConnection:
 
     def __init__(self):
         # Load credentials
-        with open("resources/twitter-credentials.json") as file:
+        with open("../resources/twitter-credentials.json") as file:
             credentials = json.load(file)
         try:
             self.auth = tweepy.OAuthHandler(credentials['CONSUMER_KEY'], credentials['CONSUMER_SECRET'])

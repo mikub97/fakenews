@@ -17,9 +17,9 @@ sb_stemmer = SnowballStemmer("english",)
 # reading data files
 
 
-test_filename = 'test.csv'
-train_filename = 'train.csv'
-valid_filename = 'valid.csv'
+test_filename = '../../data/test.csv'
+train_filename = '../../data/train.csv'
+valid_filename = '../../data/valid.csv'
 
 train_news = pd.read_csv(train_filename)
 test_news = pd.read_csv(test_filename)

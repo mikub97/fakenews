@@ -1,5 +1,5 @@
-from src.fetcher import Fetcher
-from src.tweetLoader import TweetLoader
+from src.mongoDB.fetcher import Fetcher
+from src.mongoDB.tweetLoader import TweetLoader
 
 if __name__ == '__main__':
     mongo=TweetLoader()
