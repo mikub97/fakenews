@@ -1,11 +1,11 @@
-import json
+import json as j
 import re
 from src.twitter.TwitterConncection import TwitterConnection
 import tweepy
 import pymongo
 from textblob import TextBlob
 
-def clean_tweet( tweet):
+def clean_tweet(tweet):
     '''
     Utility function to clean tweet text by removing links, special characters
     using simple regex statements.
@@ -21,85 +21,77 @@ def getTweetSentiments(tweet):
     return analysis.sentiment.polarity
 
 
+def clearTweetJson(json):
+    toDeleteAttr = ['metadata','quoted_status','entities','id_str','user','place','favorited','retweeted',
+                    'coordinates','contributors','source','truncated','geo','in_reply_to_status_id_str',
+                    'in_reply_to_user_id','in_reply_to_user_id_str','_id','extended_entities','retweeted_status',
+                        'quoted_status_id_str']
+    try:
+        json['user_name']=json['user']['screen_name']
+    except:
+        pass
+    try:
+        json['hashtags']=json['entities']['hashtags']
+    except:
+        pass
+    json['user_mentions']=[]
+    try :
+        for user_mention in json['entities']['user_mentions']:
+            json['user_mentions'].append(user_mention['screen_name'])
+    except:
+        pass
+    for attr in toDeleteAttr:
+        try:
+            del json[attr]
+        except:
+            pass
+    return json
 
-def main():
-    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-    mydb = myclient["mydatabase"]
-    mycol = mydb["tweets"]
-    # TwitterConncection object
-    api2 = TwitterConnection()
-    api = tweepy.API(api2.auth)
+class Mongo:
 
-    # search =  api.user_timeline(screen_name = 'realDonaldTrump', count = 1, include_rts = True,tweet_mode="extended")
-    search = tweepy.Cursor(api.search, q="Trump News -filter:retweets", lang="en", show_user="true",
-                           tweet_mode="extended").items(10)
-    for item in search:
-        user = api.get_user(item.user.screen_name)
-        text = item.full_text
-        username = item.user.screen_name
-        id = item.id
+    def __init__(self,max_comments=100,max_reply=100):
+        self.myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+        self.mydb = self.myclient["mydatabase"]
+        self.tweets = self.mydb["tweets"]
+        self.comments = self.mydb['comments']
+        # TwitterConncection object
+        self.api = TwitterConnection().api
+        self.mydb.drop_collection(name_or_collection="tweets")
+        self.mydb.drop_collection(name_or_collection="comments")
+        self.max_reply=max_reply;
+        self.max_comments=max_comments
 
-        followCount = user.followers_count
-        friendsCount = user.friends_count
-        RTcount = item.retweet_count
-        creationDate = item.created_at
-        sentiment = getTweetSentiments(text)
-        """print(sentiment)
-        print(item.full_text)
-        print(item.id)
-        print("folcount: ", user.followers_count)
-        print("frencount: ", user.friends_count)
-        print(item.created_at)
-        print(item.retweet_count)
-        print("retweets: ", item.retweet_count)
-        print(item.user.screen_name)
+    def saveTweetWithDataById(self,id=-1):
+        tweet = None
+        if (id==-1):
+            search = self.api.user_timeline(screen_name='realDonaldTrump', count=1)
+            tweet = search[0]
+        else :
+            tweet = self.api.get_status(id=id)
+        if tweet == None:
+            raise Exception('No tweet with id = ' +id.__str__())
+        if tweet.__getattribute__('lang') != 'en':
+            raise Exception('Tweet is not english one')
+        before_count =self.tweets.count()
+        json = tweet._json
+        self.tweets.insert_one(clearTweetJson(json))
+        print((self.tweets.count()-before_count).__str__()+' tweets added\n')
+        clearTweetJson(json)
+        print(j.dumps(json, indent=2, sort_keys=True))
+        self.saveReplies(tweet)
 
-        print(text)
-        print(username) """
-        potentialreplies = tweepy.Cursor(api.search, q='to:{}'.format(username),
-                                         since_id=id, tweet_mode='extended').items()
-        count = 0
-        replies = []
-        while True:
-            if count == 10: break
-            try:
-                reply = potentialreplies.next()
-                if not hasattr(reply, 'in_reply_to_status_id_str'):
-                    print("no replies")
-                if reply.in_reply_to_status_id == id:
-                    count = count + 1
-                    print("reply of tweet:{}".format(reply.full_text))
-                    replies.append(reply.full_text)
-
-            except tweepy.RateLimitError as e:
-                print("Twitter api rate limit reached".format(e))
-                continue
-
-            except tweepy.TweepError as e:
-                print("Tweepy error occured:{}".format(e))
-                break
-
-            except StopIteration:
-                # if replies == []: print("no replies")
-                break
-
-            except Exception as e:
-                print("Failed while fetching replies {}".format(e))
-                break
-        json = {}
-        json["id"] = id
-        json["text"] = text
-        json["sentiment"] = sentiment
-        json["friendsCount"] = friendsCount
-        json["followersCount"] = followCount
-        json["comments"] = replies
-        json["retweetCount"] = RTcount
-        json["username"] = username
-        json["date"] = creationDate
-        print(json)
-        mycol.insert_one(json)
-    print("done")
+    def saveReplies(self,tweet):
+        before_count =self.tweets.count()
+        for tweet in tweepy.Cursor(self.api.search, q='to:'+tweet.author.screen_name,lang='en', since_id=tweet.id,
+                                   result_type='recent',timeout=999999).items(self.max_reply):
+            json = tweet._json
+            json = clearTweetJson(json)
+            self.tweets.insert_one(json)
+        print((self.tweets.count()-before_count).__str__()+' replies added\n')
 
 
+
+# 1133284566632787969
 if __name__ == '__main__':
-    main()
+    mongo=Mongo()
+    mongo.saveTweetWithDataById(id=1133284566632787969)

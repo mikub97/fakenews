@@ -1,36 +1,30 @@
 import re
+
+from src.mongo import clearTweetJson
 from src.twitter.TwitterConncection import TwitterConnection
 import tweepy
 import pymongo
 from textblob import TextBlob
 import json
 
-class dataFetching():
+class DataFetching():
     def __init__(self):
         self.myclient = pymongo.MongoClient("mongodb://localhost:27017/")
         self.mydb = self.myclient["mydatabase"]
-        self.mycol = self.mydb["tweets"]
+        self.tweets = self.mydb["tweets"]
+        self.comments = self.mydb['comments']
 
 
 
-def main():
-    mongo = dataFetching()
-    for x in mongo.mycol.find():
-        id = x['id']
-        text = x['text']
-        sentiment = x['sentiment']
-        friendsCount = x['friendsCount']
-        followersCount = x['followersCount']
-        comments = x['comments']
-        retweetCount = x['retweetCount']
-        username = x['username']
-        date = x['date']
-        #tu podpinamy kolejne moduły
-        #np.
-        #ml = MachineLearningModule()
-        #wynik_machine_learning = ml.machine_eval(text,id)
-        print(id, text, sentiment, friendsCount, followersCount, comments, retweetCount, username, date)
+
+    def print_tweets(self):
+        print(self.tweets.count().__str__() + ' objects in the DB')
+        for x in self.tweets.find():
+            clearTweetJson(x)
+            print(json.dumps(x, indent=2, sort_keys=True))
+            print('\n')
 
 
 if __name__ == '__main__':
-    main()
+    fetch = DataFetching()
+    fetch.print_tweets()
