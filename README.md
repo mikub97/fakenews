@@ -11,6 +11,10 @@ Dokumentacja ( link umożliwia tylko wyświetlanie, więc podajcie maile to was 
 https://docs.google.com/document/d/1WuP45YpfjxqyZbNAFnbzWICVt7ftB1hCSw-E8Wq9o8w/edit?usp=sharing
 
 ##Bielas 28.05.2019
+UWAGA!
+- zeby moj modul zadzial przy wyszukiwaniu tweetow musz byc ustawione parametry:
+    - tweet_mode='extended',
+    - include_entities=True
 
 dodalem:
 - klasa BotChecker
