@@ -10,6 +10,47 @@ W klasie TwitterConnection jest atrybut api do twittera poprzez biblioteke tweep
 Dokumentacja ( link umożliwia tylko wyświetlanie, więc podajcie maile to was dodam do edycji ) :
 https://docs.google.com/document/d/1WuP45YpfjxqyZbNAFnbzWICVt7ftB1hCSw-E8Wq9o8w/edit?usp=sharing
 
+##Bielas 28.05.2019
+
+dodalem:
+- klasa BotChecker
+- klasa UrlMachineLearner
+- plik data.csv
+
+Klasa UrlMachineLearner sprawdza czy dany link jest wiarygodny - uczy sie na podstwie
+danych uczacych w 'data.csv' - nie jest to niestety bardzo dokladne przez co moze wypluwac wiele fake'owych tweetow
+
+klasa BotChecker sprawdza czy dany tweet jest fake na podstawie:
+
+- Czy dany uzytkownik jest botem - jesli roznica czasu miedzy dwoma 
+opublikowanymi tweetami jest wieksza niz dwa dni to znaczy ze to jest bot
+
+- na podstawie wiarygodnosci URLi w treści tweeta - tutaj wykorzystywane sa dwie metody
+jesli wlaczy sie UrlMachineLearner to program uczy sie sprawdzac czy link jest ok,
+jesly sie to wyłączy to program sprawdza kod HTTP danego url, jesli jest nie tak to znaczy
+ze tweet jest fake'owy
+
+UWAGA:
+
+jesli korzystami z klasy BotChecker to tylko z metod:
+- is_fake_based_on_user(self, tweet) - sprawdzanie bota, domyslnie wlaczone machine learning
+- is_fake_based_on_external_urls(self, tweet) - domyslnie wlaczone machine learning
+- is_fake(self, tweet, isMachineLearnignOn) - tutaj wlaczamy machine learning podajac jako
+drugi argument True, wylaczamy podajac False
+
+Dodatkowo dzieki klasie mozemy sprawdzic sentyment danego tweeta:
+- get_tweet_sentiment(self, tweet) - wypluwa nam: positive, negative, neutral
+
+Plik BotChecker mozna opdalic dla celow testowych
+
+Co moze zostac ulepszone:
+- cos sie pieprzylo z importami wiec wszytkie pliki dalem do jednej paczki,
+jak ogarniacie lepiej pythona to mozecie zrefactorowac
+
+
+
+##Inna sekcja
+
 Przydatne linki : 
 - PageRank extractor -> https://github.com/aablack/websearchapp/blob/master/search/rank_provider.py 
 

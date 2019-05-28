@@ -12,7 +12,7 @@ class TwitterConnection:
 
     def __init__(self):
         # Load credentials
-        with open("resources/twitter-credentials.json") as file:
+        with open("twitter/twitter-credentials.json") as file:
             credentials = json.load(file)
         try:
             self.auth = tweepy.OAuthHandler(credentials['CONSUMER_KEY'], credentials['CONSUMER_SECRET'])
@@ -67,7 +67,11 @@ class TwitterConnection:
 
         full_text = tweet.full_text
         #todo zle czyszczenie napisu
-        urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', full_text)
+        urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', 'https://www.pscp.tv/w/b7yi9jF4a2pEQmFkTlpvUXp8MUJkR1lBVm9nT2dHWEGtRUL8BFuy3FiSOVgByoLPdLi3E6FI5uGK1_9R3JSJ')
+        print('--------------------')
+        for url in urls:
+            print(url)
+        print('--------------------')
         if len(urls) > 0:
             for url in urls:
                 http_code = urlopen(url).code
@@ -79,16 +83,18 @@ class TwitterConnection:
 
         tweets = []
         try:
-            fetched_tweets = self.api.search(q=query, count=count, tweet_mode='extended')
+            fetched_tweets = self.api.search(q=query, count=count, tweet_mode='extended', include_entities=True)
 
             for tweet in fetched_tweets:
                 username = tweet.user.screen_name
+                url = tweet.entities['urls']
                 parsed_tweet = {'username': tweet.user.screen_name,
                                 'retweets': tweet.retweet_count,
                                 'isBot': self.isBot(tweet),
                                 'safeUrls': self.is_tweet_safe_based_on_external_urls(tweet),
                                 'text': tweet.full_text,
                                 'sentiment': self.getTweetSentiment(tweet),
+                                'urls': url
                                 }
                 # appending parsed tweet to tweets list
                 if tweet.retweet_count > 0:
