@@ -17,7 +17,7 @@ def getTweetSentiments(tweet):
 
 
 
-def clearTweetJson(json):
+def clearTweetJson(json,connected_with_tweet=None):
     toDeleteAttr = ['metadata','quoted_status','entities','id_str','user','place','favorited','retweeted',
                     'coordinates','contributors','source','truncated','geo','in_reply_to_status_id_str',
                     'in_reply_to_user_id','in_reply_to_user_id_str','_id','extended_entities','retweeted_status',
@@ -25,6 +25,7 @@ def clearTweetJson(json):
 
     json['user_mentions']=[]
     json['hashtags']=[]
+    json['connected_with_tweet']=connected_with_tweet
     try :
         for user_mention in json['entities']['user_mentions']:
             json['user_mentions'].append(user_mention['screen_name'])
@@ -44,11 +45,13 @@ def clearTweetJson(json):
             json['user_mentions'].append(user_mention['screen_name'])
     except:
         pass
+
     for attr in toDeleteAttr:
         try:
             del json[attr]
         except:
             pass
+
     return json
 
 def clearUserJson(json):

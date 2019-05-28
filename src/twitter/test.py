@@ -1,8 +1,5 @@
 from functools import wraps
 from flask import Flask
-from flask import request, Response
-from subprocess import call
-from flask import render_template
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
