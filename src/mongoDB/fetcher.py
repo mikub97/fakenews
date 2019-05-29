@@ -21,7 +21,14 @@ class Fetcher():
         return self.users.find_one({'screen_name':tweet['screen_name']})
 
     def get_replies(self, id):
-        return self.tweets.find({'in_reply_to_status_id':id})
+        cursor =  self.tweets.find({'in_reply_to_status_id':id})
+        replies=[]
+        while True:
+            try:
+                replies.append(cursor.next())
+            except StopIteration:
+                return replies
+        return replies
 
     def print_stats(self):
         print("There are " + self.users.count().__str__() + " users in db")
@@ -47,3 +54,4 @@ class Fetcher():
 if __name__ == '__main__':
     fetch = Fetcher()
     fetch.print_stats()
+    print(fetch.get_replies(1133284566632787969))

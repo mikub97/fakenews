@@ -63,17 +63,18 @@ class TweetLoader:
         return tweet
 
     # Zapisuje Tweet, replies, author(opcjonalnie),  authors of replies (opcjonalnie)
-    def saveTweetWithAllData(self,id=-1,to_print=False,with_author=True,with_author_of_replies=False):
+    def saveTweetWithAllData(self,id=-1,to_print=False,with_author=True,with_authors_of_replies=False):
         tweet = self.saveTweet(id,to_print=to_print)
         self.saveUser(tweet['screen_name'],to_print=to_print)
-        self.saveReplies(tweet,to_print=to_print,with_author=with_author_of_replies)
+        self.saveReplies(tweet,to_print=to_print,with_author=with_authors_of_replies)
 
     #Zapisuje Odpowiedzi do tweeta  ------- argument tweet to FAKTYCZNIE TWEET, NIE ID
     def saveReplies(self,tweet,to_print=False,with_author=False):
         before_count =self.tweets.count()
-        for reply in tweepy.Cursor(self.api.search, q='to:'+tweet['screen_name'],lang='en', since_id=tweet['id'],
-                                   result_type='recent',timeout=999999).items(self.max_reply):
-            self.saveTweet(reply._json['id'],to_print=to_print,with_author=with_author)
+        for reply in tweepy.Cursor(self.api.search, q='to:'+tweet['screen_name'].__str__(),lang='en', since_id=tweet['id'],
+                                   result_type='popular',timeout=999999).items(self.max_reply):
+            if (reply._json['in_reply_to_status_id']==tweet['id']):
+                self.saveTweet(reply._json['id'],to_print=to_print,with_author=with_author)
         if (to_print):
             print((self.tweets.count()-before_count).__str__()+' replies added\n')
 
@@ -88,6 +89,8 @@ class TweetLoader:
             try:
                 tweet = cursor.next()
                 tweet = clearTweetJson(tweet._json,connected_with_tweet)
+                if tweet['id']==connected_with_tweet:
+                    break
                 user =self.api.get_user(screen_name=tweet['screen_name'])
                 user = clearUserJson(user._json)
                 if verified_authors_only:
@@ -119,24 +122,45 @@ class TweetLoader:
                 i=i+1
             except StopIteration :
                 return
-            
+
     #Zapisuje autora Tweetu
     def saveAuthor(self,id):
         tweet =self.api.get_status(id=id)
         self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
 
+    def loadDataForTweet(self,id,to_print=False,with_authors_of_replies=False,connected_tweets=True,verified_authors_only=True):
+        tweet_count_before = self.tweets.count()
+        user_count_before = self.tweets.count()
+        self.saveTweetWithAllData(id=id,with_authors_of_replies=with_authors_of_replies,to_print=to_print)
+        tweet_count_middle = self.tweets.count()
+        user_count_middle = self.tweets.count()
+        if connected_tweets:
+            text = self.tweets.find_one({'id':id})['text']
+            words = text.split(" ")
+            mongo.saveTweetsWithWords(words, connected_with_tweet=id, limit=100,
+                                      verified_authors_only=True, to_print=to_print, with_authors=with_authors_of_replies)
+        tweet_count_end = self.tweets.count()
+        user_count_end = self.tweets.count()
+        if to_print:
+            print()
+            print("There are " +tweet_count_end.__str__() + " tweets in the DB")
+            print("There are " + user_count_end.__str__() + " users in the DB")
+        print((tweet_count_end-tweet_count_middle).__str__() +" connected tweets")
+
 
 # 1133284566632787969
 if __name__ == '__main__':
 
-    mongo=TweetLoader(restart=True)
+    mongo=TweetLoader(restart=True,max_reply=20)
+
+    mongo.loadDataForTweet(1133284566632787969,to_print=True,with_authors_of_replies=True)
     #Pobieranie konkretnego tweeta, bez autora
-    mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
+    # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 
     # Pobieranie konkretnego użytkonika
-    mongo.saveUser(screen_name='potus',to_print=True)
+    # mongo.saveUser(screen_name='potus',to_print=True)
     # Pobieranie konkretnego tweetu, jego autora, odpowiedziami do tweetu i ich autorami
     # mongo.saveTweetWithAllData(id=1133184409127989248,with_author_of_replies=True,to_print=True)
 
     #Działanie pobierania tweetów powiązanych
-    mongo.saveTweetsWithWords(['Oklahoma','Japan'],connected_with_tweet='z tym ID',limit=100,verified_authors_only=True,to_print=True,with_authors=True)
+    # mongo.saveTweetsWithWords(['Oklahoma','Japan'],connected_with_tweet='z tym ID',limit=100,verified_authors_only=True,to_print=True,with_authors=True)
