@@ -128,7 +128,7 @@ class TweetLoader:
         tweet =self.api.get_status(id=id,tweet_mode='extended')
         self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
 
-    def loadDataForTweet(self,id,to_print=False,with_authors_of_replies=False,connected_tweets=True,verified_authors_only=True):
+    def loadDataForTweet(self,id,to_print=False,with_authors_of_replies=False,connected_tweets=True,with_connected_tweets=False,verified_authors_only=True):
         tweet_count_before = self.tweets.count()
         user_count_before = self.tweets.count()
         self.saveTweetWithAllData(id=id,with_authors_of_replies=with_authors_of_replies,to_print=to_print)
@@ -137,8 +137,11 @@ class TweetLoader:
         if connected_tweets:
             text = self.tweets.find_one({'id':id})['full_text']
             words = text.split(" ")
+
+            #  tutaj następuje wybranie słow do query
+
             mongo.saveTweetsWithWords(words, connected_with_tweet=id, limit=100,
-                                      verified_authors_only=True, to_print=to_print, with_authors=with_authors_of_replies)
+                                      verified_authors_only=verified_authors_only, to_print=to_print, with_authors=with_authors_of_replies)
         tweet_count_end = self.tweets.count()
         user_count_end = self.tweets.count()
         if to_print:
@@ -153,14 +156,14 @@ if __name__ == '__main__':
 
     mongo=TweetLoader(restart=True,max_reply=20)
 
-    mongo.loadDataForTweet(1133284566632787969,to_print=True,with_authors_of_replies=True)
+    mongo.loadDataForTweet(1133284566632787969,to_print=True,with_authors_of_replies=True,with_connected_tweets=True)
     #Pobieranie konkretnego tweeta, bez autora
-    mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
+    # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 
     # Pobieranie konkretnego użytkonika
-    mongo.saveUser(screen_name='potus',to_print=True)
+    # mongo.saveUser(screen_name='potus',to_print=True)
     # Pobieranie konkretnego tweetu, jego autora, odpowiedziami do tweetu i ich autorami
-    mongo.saveTweetWithAllData(id=1133184409127989248,with_authors_of_replies=True,to_print=True)
+    # mongo.saveTweetWithAllData(id=1133184409127989248,with_authors_of_replies=True,to_print=True)
 
     #Działanie pobierania tweetów powiązanych
-    mongo.saveTweetsWithWords(['Oklahoma','Japan'],connected_with_tweet='z tym ID',limit=100,verified_authors_only=True,to_print=True,with_authors=True)
+    # mongo.saveTweetsWithWords(['Oklahoma','Japan'],connected_with_tweet='z tym ID',limit=100,verified_authors_only=True,to_print=True,with_authors=True)
