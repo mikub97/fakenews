@@ -69,16 +69,15 @@ class BotChecker:
                         current_tweet_date = last_tweets[idx].created_at
                         tweet_date = last_tweets[idx - 1].created_at
                         two_days = datetime.timedelta(days=2)
-                        three_days = datetime.timedelta(days=3)
                         five_days = datetime.timedelta(days=5)
                         if (tweet_date - current_tweet_date) < two_days:
                             result['fake'] = False
                             result['probability'] = 1
                             result['description'] = 'User publikuje z czestotliwoscia wieksza niz dwa dni - to nie ' \
                                                     'jest bot '
-                        elif three_days < (tweet_date - current_tweet_date) < five_days:
+                        elif two_days < (tweet_date - current_tweet_date) < five_days:
                             result['fake'] = True
-                            result['probability'] = 0.7
+                            result['probability'] = 0.6
                             result['description'] = 'User nie publikowal nic przez 3,4 lub 5 dni - uzanje za bota z ' \
                                                     'prawd.=0.6 '
                         else:
@@ -114,23 +113,22 @@ class BotChecker:
                         result = {
                             'fake': True,
                             'probability': 1,
-                            'description': 'Wylaczono machine learning'
+                            'description': 'Wylaczono machine learning, kod HTTP jest nieprawidlowy'
+                        }
+                        return result
+                    else:
+                        result = {
+                            'fake': True,
+                            'probability': 1,
+                            'description': 'Wylaczono machine learning, kod HTTP jest prawidlowy'
                         }
                         return result
                 except:
-                    print('Site does not let us in, considering tweet as fake')
                     result = {
-                        'fake': True,
+                        'fake': False,
                         'probability': 1,
-                        'descripiton': 'Wylaczono machine learning'
+                        'description': 'Wylaczono machine learning, Url nie rzuca bledem ale nieznany jest content url, zwracam prawdo.=0.7'
                     }
-                    return result
-
-                result = {
-                    'fake': False,
-                    'probability': 0.7,
-                    'description': 'Wylaczono machine learning, Url nie rzuca bledem ale nieznany jest content url, zwracam prawdo.=0.7'
-                }
                 return result
             else:
                 data_machine_learner = UrlMachineLearner()
@@ -160,4 +158,3 @@ class BotChecker:
     def is_fake_based_on_external_urls(self, tweetId, isMachineLearning):
         tweet = self.fetcher.get_tweet(tweetId)
         return self.is_fake_external_urls(tweet, isMachineLearning)
-
