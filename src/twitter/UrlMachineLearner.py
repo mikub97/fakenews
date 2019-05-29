@@ -59,7 +59,7 @@ class UrlMachineLearner:
 
 if __name__ == '__main__':
     obj = UrlMachineLearner()
-    print(obj.is_url_malicious('wikipedia.org'))
+    print(obj.is_url_malicious('aszdziennik.pl'))
 
 
 

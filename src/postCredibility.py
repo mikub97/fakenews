@@ -3,6 +3,7 @@ from bson.json_util import dumps
 from src.mongoDB.fetcher import Fetcher
 from src.static import Cleaner
 import src.static.Cleaner
+from src.mongoDB.tweetLoader import TweetLoader
 
 
 class postCredibility():
@@ -14,6 +15,7 @@ class postCredibility():
         self.users = self.mydb['users']
 
     def evaluate(self, id):
+        mongo = TweetLoader(restart=False)
         fetcher = Fetcher()
         tweetJson = fetcher.get_tweet(id)
 
@@ -24,7 +26,7 @@ class postCredibility():
         sentimentComments = 0;
         subjectivityComments = 0
         i = 0
-        repliesJson = fetcher.get_replies(id)
+        """repliesJson = fetcher.get_replies(id)
         if repliesJson:
             for reply in repliesJson:
                 i = i + 1
@@ -36,4 +38,9 @@ class postCredibility():
             meanSubjectivityComments = subjectivityComments / i
             print("Sentiment: ", tweetSentiment, "Mean comments Sentiment: ", meanSentimentComments)
             print("Subjectivity: ", tweetSubjectivity, "Mean comments subjectivity: ", meanSubjectivityComments)
+        """
+        nazwy_wlasne = Cleaner.nazwy_wlasne(text)
+        string = ' '.join(nazwy_wlasne)
+        print(string)
+        mongo.saveTweetsWithWords(string,verified_authors_only=True)
         return text

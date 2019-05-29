@@ -93,18 +93,18 @@ def process_words(text):
     wordsFiltered = []
     for w in tokens:
         if w not in stopWords:
-            w = w.lower()
+            #w = w.lower()
             w = sb_stemmer.stem(w)
             wordsFiltered.append(w)
 
     return wordsFiltered
 
 def nazwy_wlasne(text):
+    text = clean_tweet(text)
     tokenizer = RegexpTokenizer(r'\w+')
     tokens = tokenizer.tokenize(text)
     tagged_sent = pos_tag(tokens)
-    print(tagged_sent)
+
     propernouns = [word for word, pos in tagged_sent if pos == 'NNP']
-    print(propernouns)
     return propernouns
 
