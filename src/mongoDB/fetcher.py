@@ -20,21 +20,29 @@ class Fetcher():
         tweet = self.get_tweet(id)
         return self.users.find_one({'screen_name':tweet['screen_name']})
 
-    def get_replies(self, id):
+    def get_replies(self, id,verified_authors_only=False):
         cursor =  self.tweets.find({'in_reply_to_status_id':id})
         replies=[]
+        verified_replies=[]
         while True:
             try:
                 replies.append(cursor.next())
             except StopIteration:
-                return replies
-        return replies
+                if verified_authors_only:
+                    for reply in replies:
+                        if self.get_author_of_tweet(id=reply['id'])['verified'] == True:
+                            verified_replies.append(reply)
+                    return verified_replies
+                else:
+                    return replies
 
     def print_stats(self,id=None):
         print("There are " + self.users.count().__str__() + " users in db")
         print("There are " + self.tweets.count().__str__() + " tweets in db")
         if id != None:
             print("With number of " + self.tweets.find({'connected_with_tweet':id}).count().__str__() + " connected to " + id.__str__())
+            print("With number of " + self.tweets.find({'connected_with_tweet':id}).count().__str__() + " connected to " + id.__str__())
+
 
 
 
@@ -57,5 +65,5 @@ class Fetcher():
 
 if __name__ == '__main__':
     fetch = Fetcher()
-    fetch.print_stats(id=1133284566632787969)
-    print(fetch.get_replies(1133284566632787969))
+    fetch.print_stats(id=1133529099530571777)
+    print(fetch.get_replies(1133529099530571777,verified_authors_only=True))

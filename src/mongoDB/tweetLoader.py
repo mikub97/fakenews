@@ -12,7 +12,7 @@ import pymongo
 
 class TweetLoader:
 
-    def __init__(self,max_comments=100,max_reply=100,restart=False):
+    def __init__(self,max_reply=1000,restart=False):
         self.myclient = pymongo.MongoClient("mongodb://localhost:27017/")
         self.mydb = self.myclient["mydatabase"]
         self.tweets = self.mydb["tweets"]
@@ -23,8 +23,7 @@ class TweetLoader:
         if restart:
             self.mydb.drop_collection(name_or_collection="tweets")
             self.mydb.drop_collection(name_or_collection="users")
-        self.max_reply=max_reply;
-        self.max_comments=max_comments
+        self.max_reply=max_reply
 
     #Zapisuje użytkownika do BD
     def saveUser(self,screen_name,to_print=False):
@@ -43,6 +42,8 @@ class TweetLoader:
 
     #Zapisuje tweeta do BD
     def saveTweet(self,id,to_print=False,with_author=False):
+        if (self.tweets.find_one({'id':id}) !=None):
+            return
         tweet = None
         try:
             tweet = self.api.get_status(id=id,tweet_mode='extended')
@@ -51,7 +52,7 @@ class TweetLoader:
         if tweet == None:
             raise Exception('No tweet with id = ' + id.__str__())
         if tweet.__getattribute__('lang') != 'en':
-            raise Exception('Tweet is not english one')
+            return
         tweet = clearTweetJson(tweet._json)
         self.tweets.insert_one(tweet)
         if (to_print):
@@ -64,19 +65,52 @@ class TweetLoader:
 
     # Zapisuje Tweet, replies, author(opcjonalnie),  authors of replies (opcjonalnie)
     def saveTweetWithAllData(self,id=-1,to_print=False,with_author=True,with_authors_of_replies=False):
-        tweet = self.saveTweet(id,to_print=to_print)
+        self.saveTweet(id,to_print=to_print)
+        tweet = self.tweets.find_one({'id':id})
         self.saveUser(tweet['screen_name'],to_print=to_print)
         self.saveReplies(tweet,to_print=to_print,with_author=with_authors_of_replies)
 
     #Zapisuje Odpowiedzi do tweeta  ------- argument tweet to FAKTYCZNIE TWEET, NIE ID
-    def saveReplies(self,tweet,to_print=False,with_author=False):
-        before_count =self.tweets.count()
-        for reply in tweepy.Cursor(self.api.search, q='to:'+tweet['screen_name'].__str__(),lang='en', since_id=tweet['id'],
-                                   result_type='popular',timeout=999999).items(self.max_reply):
-            if (reply._json['in_reply_to_status_id']==tweet['id']):
-                self.saveTweet(reply._json['id'],to_print=to_print,with_author=with_author)
+    # def saveReplies(self,tweet,to_print=False,with_author=False):
+    #     before_count =self.tweets.count()
+    #     i=0
+    #     cursor = tweepy.Cursor(tweepy.api.search, q='to:'+tweet['screen_name'],
+    #                             since_id=tweet['id']).items()
+    #     for reply in cursor:
+    #         if i>=self.max_reply:
+    #             break
+    #         if (reply._json['in_reply_to_status_id']==tweet['id']):
+    #             self.saveTweet(reply._json['id'],to_print=to_print,with_author=with_author)
+    #
+    #     if (to_print):
+    #         print((self.tweets.count()-before_count).__str__()+' replies added\n')
+    def saveReplies(self, tweet, to_print=False, with_author=False):
+        before_count = self.tweets.count()
+        i=0
+        cursor = tweepy.Cursor(self.api.search, q='to:' + tweet['screen_name'].__str__(),
+                                   since_id=tweet['id'],
+                                   result_type='recent', limit=self.max_reply).items()#Dlaczego tak mało zwraca odpowiedzi !! ?? Przez result_type
+        for reply in cursor:
+            if i>self.max_reply:
+                break
+            if (reply._json['in_reply_to_status_id'] == tweet['id']):
+                self.saveTweet(reply._json['id'], to_print=to_print, with_author=with_author)
+            i=i+1
+        cursor = tweepy.Cursor(self.api.search, q='to:' + tweet['screen_name'].__str__(),
+                               since_id=tweet['id'],
+
+                               result_type='popular',
+                               limit=self.max_reply).items()  # Dlaczego tak mało zwraca odpowiedzi !! ?? Przez result_type
+        i=0
+        for reply in cursor:
+            if i > self.max_reply:
+                break
+            if (reply._json['in_reply_to_status_id'] == tweet['id']):
+                self.saveTweet(reply._json['id'], to_print=to_print, with_author=with_author)
+            i = i + 1
+
         if (to_print):
-            print((self.tweets.count()-before_count).__str__()+' replies added\n')
+            print((self.tweets.count() - before_count).__str__() + ' replies added\n')
 
     #Zapisuje Tweety, które są poszukując ich na zasadzie wystąpywania słów, można zaostrzyć filtrem tylko zweryfikowani autorzy
     def saveTweetsWithWords(self,words,connected_with_tweet=None,limit=1000,verified_authors_only=False,with_authors=False,to_print=False):
@@ -140,7 +174,7 @@ class TweetLoader:
 
             #  tutaj następuje wybranie słow do query
 
-            mongo.saveTweetsWithWords(words, connected_with_tweet=id, limit=100,
+            self.saveTweetsWithWords(words, connected_with_tweet=id, limit=100,
                                       verified_authors_only=verified_authors_only, to_print=to_print, with_authors=with_authors_of_replies)
         tweet_count_end = self.tweets.count()
         user_count_end = self.tweets.count()
@@ -154,9 +188,8 @@ class TweetLoader:
 # 1133284566632787969
 if __name__ == '__main__':
 
-    mongo=TweetLoader(restart=True,max_reply=20)
-
-    mongo.loadDataForTweet(1133284566632787969,to_print=True,with_authors_of_replies=True,with_connected_tweets=True)
+    mongo=TweetLoader(restart=True,max_reply=10000)
+    mongo.loadDataForTweet(1133529099530571777,to_print=True,with_authors_of_replies=True,with_connected_tweets=True)
     #Pobieranie konkretnego tweeta, bez autora
     # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 

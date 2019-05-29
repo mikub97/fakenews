@@ -17,6 +17,6 @@ class TwitterConnection:
         try:
             self.auth = tweepy.OAuthHandler(credentials['CONSUMER_KEY'], credentials['CONSUMER_SECRET'])
             self.auth.set_access_token(credentials['ACCESS_TOKEN'], credentials['ACCESS_SECRET'])
-            self.api = tweepy.API(self.auth)
+            self.api = tweepy.API(self.auth,wait_on_rate_limit=True)
         except:
             print("Error: Authentication failed")
