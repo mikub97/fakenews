@@ -3,6 +3,7 @@ import datetime
 import requests
 from textblob import TextBlob
 
+from mongoDB.fetcher import Fetcher
 from src.TwitterConncection import TwitterConnection
 from src.twitter.UrlMachineLearner import UrlMachineLearner
 
@@ -11,6 +12,7 @@ class BotChecker:
 
     def __init__(self):
         self.api = TwitterConnection().api
+        self.fetcher = Fetcher()
 
     def parse_tweet(self, tweet, machineLearning):
         parsed_tweet = {'username': tweet.user.screen_name,
@@ -150,23 +152,12 @@ class BotChecker:
                 return result
 
     # method to be used by other modules
-    def is_fake_based_on_user(self, tweet):
+    def is_fake_based_on_user(self, tweetId):
+        tweet = self.fetcher.get_tweet(tweetId)
         return self.isBot(tweet)
 
     # method to be used by other modules
-    def is_fake_based_on_external_urls(self, tweet, isMachineLearning):
+    def is_fake_based_on_external_urls(self, tweetId, isMachineLearning):
+        tweet = self.fetcher.get_tweet(tweetId)
         return self.is_fake_external_urls(tweet, isMachineLearning)
 
-
-# Sample invoke
-def main():
-    obj = BotChecker()
-    tweets = obj.api.search(q="Donald Trump", tweet_mode='extended', count=20, include_entities=True)
-    for tweet in tweets:
-        print('is fake based on user: ', obj.is_fake_based_on_user(tweet))
-        print('is fake based on external urls: ', obj.is_fake_external_urls(tweet, True))
-
-
-# Sample invoke
-if __name__ == '__main__':
-    main()

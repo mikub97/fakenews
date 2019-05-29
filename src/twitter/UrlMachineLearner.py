@@ -14,12 +14,11 @@ class UrlMachineLearner:
     def is_url_malicious(self, link):
 
         url_csv = pd.read_csv(self.url, ',', error_bad_lines=False)
-        url_df = pd.DataFrame(url_csv)  # to convert into data frames
-        url_df = np.array(url_df)  # to convert into array
+        url_df = pd.DataFrame(url_csv)
+        url_df = np.array(url_df)
         random.shuffle(url_df)
-        y = [d[1] for d in url_df]  # all labels
-        urls = [d[0] for d in url_df]  # all urls corresponding to a label {G/B}
-        # http://blog.christianperone.com/2011/09/machine-learning-text-feature-extraction-tf-idf-part-i/
+        y = [d[1] for d in url_df]
+        urls = [d[0] for d in url_df]
 
         vectorizer = TfidfVectorizer()  # using default tokenizer
         x = vectorizer.fit_transform(urls)
