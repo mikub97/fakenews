@@ -12,11 +12,11 @@ class TwitterConnection:
 
     def __init__(self):
         # Load credentials
-        with open("../../resources/twitter-credentials.json") as file:
+        with open("twitter-credentials.json") as file:
             credentials = json.load(file)
         try:
             self.auth = tweepy.OAuthHandler(credentials['CONSUMER_KEY'], credentials['CONSUMER_SECRET'])
             self.auth.set_access_token(credentials['ACCESS_TOKEN'], credentials['ACCESS_SECRET'])
-            self.api = tweepy.API(self.auth)
+            self.api = tweepy.API(self.auth,wait_on_rate_limit=True)
         except:
             print("Error: Authentication failed")
