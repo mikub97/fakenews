@@ -84,12 +84,8 @@ def getTweetSubjectivity(text):
 def process_words(text):
     tokenizer = RegexpTokenizer(r'\w+')
     sb_stemmer = SnowballStemmer("english",)
-
     tokens = tokenizer.tokenize(text)
-
-    print(tokens)
     stopWords = set(stopwords.words('english'))
-
     wordsFiltered = []
     for w in tokens:
         if w not in stopWords:

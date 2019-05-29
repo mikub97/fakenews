@@ -123,9 +123,7 @@ class TweetLoader:
             if i >= limit:
                 return tweets
             try:
-                print(i)
                 tweet = cursor.next()
-                print(tweet)
                 tweet = clearTweetJson(tweet._json, connected_with_tweet)
                 if tweet['id'] == connected_with_tweet:
                     break
@@ -159,7 +157,6 @@ class TweetLoader:
                             print("is saved")
                 i = i + 1
             except StopIteration:
-                print("stopiteration")
                 return
 
     # Zapisuje autora Tweetu
@@ -180,7 +177,6 @@ class TweetLoader:
             nazwy_wlasne = Cleaner.nazwy_wlasne(text)
             string = ' '.join(nazwy_wlasne)
             string = ' '.join(word for word in string.split() if len(word) > 2) # dluzsze niz 2 litery
-            print(string)
             string.split()[:4] # 4 pierwsze slowa
 
             self.saveTweetsWithWords(string, connected_with_tweet=id, limit=10,
