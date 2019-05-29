@@ -45,7 +45,7 @@ class TweetLoader:
     def saveTweet(self,id,to_print=False,with_author=False):
         tweet = None
         try:
-            tweet = self.api.get_status(id=id)
+            tweet = self.api.get_status(id=id,tweet_mode='extended')
         except Exception:
             print('No tweet with id = ' + id.__str__())
         if tweet == None:
@@ -125,7 +125,7 @@ class TweetLoader:
 
     #Zapisuje autora Tweetu
     def saveAuthor(self,id):
-        tweet =self.api.get_status(id=id)
+        tweet =self.api.get_status(id=id,tweet_mode='extended')
         self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
 
     def loadDataForTweet(self,id,to_print=False,with_authors_of_replies=False,connected_tweets=True,verified_authors_only=True):
@@ -135,7 +135,7 @@ class TweetLoader:
         tweet_count_middle = self.tweets.count()
         user_count_middle = self.tweets.count()
         if connected_tweets:
-            text = self.tweets.find_one({'id':id})['text']
+            text = self.tweets.find_one({'id':id})['full_text']
             words = text.split(" ")
             mongo.saveTweetsWithWords(words, connected_with_tweet=id, limit=100,
                                       verified_authors_only=True, to_print=to_print, with_authors=with_authors_of_replies)
