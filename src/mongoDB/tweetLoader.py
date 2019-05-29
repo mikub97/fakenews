@@ -155,12 +155,12 @@ if __name__ == '__main__':
 
     mongo.loadDataForTweet(1133284566632787969,to_print=True,with_authors_of_replies=True)
     #Pobieranie konkretnego tweeta, bez autora
-    # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
+    mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 
     # Pobieranie konkretnego użytkonika
-    # mongo.saveUser(screen_name='potus',to_print=True)
+    mongo.saveUser(screen_name='potus',to_print=True)
     # Pobieranie konkretnego tweetu, jego autora, odpowiedziami do tweetu i ich autorami
-    # mongo.saveTweetWithAllData(id=1133184409127989248,with_author_of_replies=True,to_print=True)
+    mongo.saveTweetWithAllData(id=1133184409127989248,with_authors_of_replies=True,to_print=True)
 
     #Działanie pobierania tweetów powiązanych
-    # mongo.saveTweetsWithWords(['Oklahoma','Japan'],connected_with_tweet='z tym ID',limit=100,verified_authors_only=True,to_print=True,with_authors=True)
+    mongo.saveTweetsWithWords(['Oklahoma','Japan'],connected_with_tweet='z tym ID',limit=100,verified_authors_only=True,to_print=True,with_authors=True)

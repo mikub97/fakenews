@@ -30,9 +30,13 @@ class Fetcher():
                 return replies
         return replies
 
-    def print_stats(self):
+    def print_stats(self,id=None):
         print("There are " + self.users.count().__str__() + " users in db")
         print("There are " + self.tweets.count().__str__() + " tweets in db")
+        if id != None:
+            print("With number of " + self.tweets.find({'connected_with_tweet':id}).count().__str__() + " connected to " + id.__str__())
+
+
 
     def print_tweets(self):
         i=1
@@ -53,5 +57,5 @@ class Fetcher():
 
 if __name__ == '__main__':
     fetch = Fetcher()
-    fetch.print_stats()
+    fetch.print_stats(id=1133284566632787969)
     print(fetch.get_replies(1133284566632787969))
