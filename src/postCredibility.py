@@ -26,7 +26,8 @@ class postCredibility():
         sentimentComments = 0;
         subjectivityComments = 0
         i = 0
-        """repliesJson = fetcher.get_replies(id)
+        """
+        repliesJson = fetcher.get_replies(id)
         if repliesJson:
             for reply in repliesJson:
                 i = i + 1
@@ -36,11 +37,10 @@ class postCredibility():
                 subjectivityComments = subjectivityComments + Cleaner.getTweetSubjectivity(replyText)
             meanSentimentComments = sentimentComments / i
             meanSubjectivityComments = subjectivityComments / i
-            print("Sentiment: ", tweetSentiment, "Mean comments Sentiment: ", meanSentimentComments)
-            print("Subjectivity: ", tweetSubjectivity, "Mean comments subjectivity: ", meanSubjectivityComments)
+        print("Sentiment: ", tweetSentiment, "Mean comments Sentiment: ", meanSentimentComments)
+        print("Subjectivity: ", tweetSubjectivity, "Mean comments subjectivity: ", meanSubjectivityComments)
         """
-        nazwy_wlasne = Cleaner.nazwy_wlasne(text)
-        string = ' '.join(nazwy_wlasne)
-        print(string)
-        mongo.saveTweetsWithWords(string,verified_authors_only=True)
+        connectedTweets = fetcher.get_connected(id)
+        for connectedTweet in connectedTweets:
+            print(connectedTweet)
         return text

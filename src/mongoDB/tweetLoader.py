@@ -168,7 +168,7 @@ class TweetLoader:
         self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
 
     def loadDataForTweet(self, id, to_print=False, with_authors_of_replies=False, connected_tweets=True,
-                         with_connected_tweets=False, verified_authors_only=True):
+                         with_connected_tweets=False, verified_authors_only=False):
         tweet_count_before = self.tweets.count()
         user_count_before = self.tweets.count()
         self.saveTweetWithAllData(id=id, with_authors_of_replies=with_authors_of_replies, to_print=to_print)

@@ -20,6 +20,15 @@ class Fetcher():
         tweet = self.get_tweet(id)
         return self.users.find_one({'screen_name':tweet['screen_name']})
 
+    def get_connected(self,id):
+        cursor =  self.tweets.find({"connected_with_tweet":id})
+        connected=[]
+        while True:
+            try:
+                connected.append(cursor.next())
+            except StopIteration:
+                    return connected
+
     def get_replies(self, id,verified_authors_only=False):
         cursor =  self.tweets.find({'in_reply_to_status_id':id})
         replies=[]
