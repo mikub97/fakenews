@@ -6,9 +6,9 @@ import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 
-test_filename = './data/test.csv'
-train_filename = './data/train.csv'
-valid_filename = './data/valid.csv'
+test_filename = '../../data/test.csv'
+train_filename = '../../data/train.csv'
+valid_filename = '../../data/valid.csv'
 
 train_news = pd.read_csv(train_filename)
 test_news = pd.read_csv(test_filename)
