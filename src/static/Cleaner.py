@@ -31,12 +31,14 @@ def getKeyWords(text):
     strings = ' '.join(word for word in strings.split() if len(word) > 2)  # dluzsze niz 2 litery
     return strings
 
-def clearTweetJson(json, connected_with_tweet=None):
+def clearTweetJson(json, connected_with_tweet=None,remove_entities=False):
     toDeleteAttr = ['metadata', 'quoted_status', 'id_str', 'user', 'place', 'favorited', 'retweeted',
                     'coordinates', 'contributors', 'source', 'truncated', 'geo', 'in_reply_to_status_id_str',
                     'in_reply_to_user_id', 'in_reply_to_user_id_str', '_id', 'extended_entities', 'retweeted_status',
                     'quoted_status_id_str']
-
+    if remove_entities:
+        toDeleteAttr.append('entities')
+        toDeleteAttr.append('extended_entities')
     json['user_mentions'] = []
     json['hashtags'] = []
     json['connected_with_tweet'] = connected_with_tweet
