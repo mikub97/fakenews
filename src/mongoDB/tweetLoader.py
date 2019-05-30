@@ -47,7 +47,8 @@ class TweetLoader:
             return
         tweet = None
         try:
-            tweet = self.api.get_status(id=id, tweet_mode='extended')
+            tweet = self.api.get_status(id=id, tweet_mode='extended',
+                               include_entities=True)
         except Exception:
             print('No tweet with id = ' + id.__str__())
         if tweet == None:
@@ -64,19 +65,29 @@ class TweetLoader:
             self.saveUser(screen_name=tweet['screen_name'], to_print=to_print)
         return tweet
 
-    # Zapisuje Tweet, replies, author(opcjonalnie),  authors of replies (opcjonalnie)
-    def saveTweetWithAllData(self, id=-1, to_print=False, with_author=True, with_authors_of_replies=False):
-        self.saveTweet(id, to_print=to_print)
-        tweet = self.tweets.find_one({'id': id})
-        self.saveUser(tweet['screen_name'], to_print=to_print)
-        self.saveReplies(tweet, to_print=to_print, with_author=with_authors_of_replies)
+        # Zapisuje autora Tweetu
+
+    def saveAuthor(self, id):
+        tweet = self.api.get_status(id=id, tweet_mode='extended')
+        self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
+
+    def saveLastTweetsOfAuthor(self, screen_name,to_print=False,size_for_bot=10):
+        timeline =self.api.user_timeline(screen_name=screen_name, count=size_for_bot, tweet_mode='extended',
+                               include_entities=True)
+        tweets_count = self.tweets.count()
+        for tweet in timeline:
+            self.tweets.insert_one(clearTweetJson(tweet._json,connected_with_tweet=screen_name))    #connected_with_tweet = screen_name jeżeli to jest 1 z ostatnich tweetów ziomka
+
+        if to_print:
+            print("Last " +(self.tweets.count()-tweets_count).__str__() +" last tweets of the user inserted")
 
     def saveReplies(self, tweet, to_print=False, with_author=False):
         before_count = self.tweets.count()
         i = 0
         cursor = tweepy.Cursor(self.api.search, q='to:' + tweet['screen_name'].__str__(),
                                since_id=tweet['id'],
-                               result_type='recent',
+                               result_type='recent',tweet_mode='extended',
+                               include_entities=True,
                                limit=self.max_reply).items()  # Dlaczego tak mało zwraca odpowiedzi !! ?? Przez result_type
         for reply in cursor:
             if i > self.max_reply:
@@ -86,7 +97,8 @@ class TweetLoader:
             i = i + 1
         cursor = tweepy.Cursor(self.api.search, q='to:' + tweet['screen_name'].__str__(),
                                since_id=tweet['id'],
-                               result_type='popular',
+                               result_type='popular',tweet_mode='extended',
+                               include_entities=True,
                                limit=self.max_reply).items()  # Dlaczego tak mało zwraca odpowiedzi !! ?? Przez result_type
         i = 0
         for reply in cursor:
@@ -103,7 +115,8 @@ class TweetLoader:
     def saveTweetsWithWords(self, words, connected_with_tweet=None,verified_authors_only=False, with_authors=False,
                             to_print=False,limit=10):
         words = words + "-filter:retweets"
-        cursor = tweepy.Cursor(self.api.search, q=words, lang='en', result_type='recent',tweet_mode="extended", timeout=999999).items(limit)
+        cursor = tweepy.Cursor(self.api.search, q=words, lang='en', result_type='recent',tweet_mode="extended",
+                               include_entities=True, timeout=999999).items(limit)
         tweets = []
         i = 0
         while True:
@@ -147,17 +160,11 @@ class TweetLoader:
             except StopIteration:
                 return
 
-    # Zapisuje autora Tweetu
-    def saveAuthor(self, id):
-        tweet = self.api.get_status(id=id, tweet_mode='extended')
-        self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
-
 
         # Zapisuje Tweet, replies, author(opcjonalnie),  authors of replies (opcjonalnie)
-
     def saveTweetWithAllData(self, id=-1, to_print=False, with_author=True, with_authors_of_replies=False,
                                  connected_tweets=False,
-                                 verified_authors_only=True):
+                                 verified_authors_only=True,size_for_bot=10):
         tweet_count_before = self.tweets.count()
         user_count_before = self.tweets.count()
 
@@ -176,6 +183,7 @@ class TweetLoader:
            self.saveTweetsWithWords(Cleaner.getKeyWords(text), connected_with_tweet=id,
                     verified_authors_only=verified_authors_only, to_print=to_print,with_authors=with_authors_of_replies)
         connected_tweets_count = self.tweets.count() - replies_count-1
+        self.saveLastTweetsOfAuthor(screen_name=tweet['screen_name'],size_for_bot=size_for_bot)
         if True:
             print()
             print((self.tweets.count() - tweet_count_before).__str__() + " tweets added into the DB")
@@ -186,7 +194,8 @@ class TweetLoader:
 
 # 1133284566632787969
 if __name__ == '__main__':
-    mongo = TweetLoader(restart=True, max_reply=10000)
+    mongo = TweetLoader(restart=False, max_reply=10000)
+    mongo.saveLastTweetsOfAuthor()
     # Pobieranie konkretnego tweeta, bez autora
     # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 
