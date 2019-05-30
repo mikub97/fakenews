@@ -178,8 +178,8 @@ class TweetLoader:
             nazwy_wlasne = Cleaner.nazwy_wlasne(text)
             string = ' '.join(nazwy_wlasne)
             string = ' '.join(word for word in string.split() if len(word) > 2) # dluzsze niz 2 litery
-            string = string.split()[:4] # 4 pierwsze slowa
-            string = ' '.join(string)
+            #string = string.split()[:4] # 4 pierwsze slowa
+            #string = ' '.join(string)
             print(string)
             self.saveTweetsWithWords(string, connected_with_tweet=id, limit=10,
                                      verified_authors_only=verified_authors_only, to_print=to_print,
