@@ -26,21 +26,24 @@ class postCredibility():
         sentimentComments = 0;
         subjectivityComments = 0
         i = 0
-        """
+
         repliesJson = fetcher.get_replies(id)
         if repliesJson:
             for reply in repliesJson:
                 i = i + 1
                 replyText = reply["full_text"]
-                print(replyText)
                 sentimentComments = sentimentComments + Cleaner.getTweetSentiments(replyText)
                 subjectivityComments = subjectivityComments + Cleaner.getTweetSubjectivity(replyText)
             meanSentimentComments = sentimentComments / i
             meanSubjectivityComments = subjectivityComments / i
         print("Sentiment: ", tweetSentiment, "Mean comments Sentiment: ", meanSentimentComments)
         print("Subjectivity: ", tweetSubjectivity, "Mean comments subjectivity: ", meanSubjectivityComments)
-        """
+
         connectedTweets = fetcher.get_connected(id)
-        for connectedTweet in connectedTweets:
-            print(connectedTweet)
+        i=0
+        for connectedTweet in connectedTweets[1:]:
+            author = fetcher.get_author_of_tweet(connectedTweet["id"])
+            if str(author["verified"])=="True":
+                i=i+1
+        print("Percent verified users with similar tweet: ",i/(len(connectedTweets)-1))
         return text

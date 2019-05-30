@@ -116,7 +116,8 @@ class TweetLoader:
     # Zapisuje Tweety, które są poszukując ich na zasadzie wystąpywania słów, można zaostrzyć filtrem tylko zweryfikowani autorzy
     def saveTweetsWithWords(self, words, connected_with_tweet=id, limit=5,
                             verified_authors_only=False, with_authors=False, to_print=False):
-        cursor = tweepy.Cursor(self.api.search, q=words, lang='en', result_type='popular', timeout=999999).items(limit)
+        words = words + "-filter:retweets"
+        cursor = tweepy.Cursor(self.api.search, q=words, lang='en', result_type='recent',tweet_mode="extended", timeout=999999).items(limit)
         tweets = []
         i = 0
         while True:
@@ -134,7 +135,7 @@ class TweetLoader:
                         self.tweets.insert_one(tweet)
                         if (to_print):
                             print("Tweet :")
-                            print(tweet)
+                            print(tweet["full_text"],print["screen_name"])
                             print("is saved")
                         if (with_authors):
                             self.users.insert_one(user)
@@ -147,7 +148,7 @@ class TweetLoader:
                     self.tweets.insert_one(tweet)
                     if (to_print):
                         print("Tweet :")
-                        print(tweet)
+                        print(tweet["full_text"])
                         print("is saved")
                     if (with_authors):
                         self.users.insert_one(user)
@@ -177,8 +178,9 @@ class TweetLoader:
             nazwy_wlasne = Cleaner.nazwy_wlasne(text)
             string = ' '.join(nazwy_wlasne)
             string = ' '.join(word for word in string.split() if len(word) > 2) # dluzsze niz 2 litery
-            string.split()[:4] # 4 pierwsze slowa
-
+            string = string.split()[:4] # 4 pierwsze slowa
+            string = ' '.join(string)
+            print(string)
             self.saveTweetsWithWords(string, connected_with_tweet=id, limit=10,
                                      verified_authors_only=verified_authors_only, to_print=to_print,
                                      with_authors=with_authors_of_replies)

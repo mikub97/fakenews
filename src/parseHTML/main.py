@@ -1,8 +1,7 @@
 import optparse
 import os, urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup
-
-from parseHTML.anonimBrowser import anonimBrowser
+from src.parseHTML.anonimBrowser import anonimBrowser
 
 
 def viewPage(browser,url):
