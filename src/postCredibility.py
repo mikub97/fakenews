@@ -72,11 +72,13 @@ class postCredibility():
             Dict["description"] = "Tweet is popular. High chance it is not fake."
         else:
             Dict["description"] = "Tweet does not have relevance. Might be fake."
-        pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment)) / 420
-        Dict["probability"] =  pts
+        if pts < 210:
+            Dict["fake"] = True
         if pts < 105:
+            Dict["fake"] = True
             Dict["description"] = "Tweet is not relevant, and is subjective/has big sentiment"
-
+        pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment)) / 420
+        Dict["probability"] = pts
         return Dict
 
 
