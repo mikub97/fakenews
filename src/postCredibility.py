@@ -52,6 +52,7 @@ class postCredibility():
         tweetAuthor = fetcher.get_author_of_tweet(tweetJson["id"])
         numOfFollowers = tweetAuthor["followers_count"]
         numOfRT = tweetJson['retweet_count']
+        
         print(numOfFollowers, numOfFavs, numOfRT)
         Dict = {"FakeProbability":0, "Details":"lol"}
         pts = 210;
