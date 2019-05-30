@@ -49,8 +49,11 @@ class BotChecker:
             return result
         else:
             user_name = tweet.user.screen_name
-            last_tweets = self.api.user_timeline(screen_name=user_name, count=10, tweet_mode='extended',
-                                                 include_entities=True)
+            # last_tweets = self.api.user_timeline(screen_name=user_name, count=10, tweet_mode='extended',
+            #                                      include_entities=True)
+
+            last_tweets = self.fetcher.get_users_last_tweets(user_name)
+
             if len(last_tweets) < 10:
                 result = {
                     'fake': True,

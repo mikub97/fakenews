@@ -23,7 +23,7 @@ if __name__ == '__main__':
     print(malicious_urls_machine_learning)
     print('is tweet fake result based on external urls(withou machine learning):')
 
-    """
+
     print('\nGłówny tweet:')
     print(fetcher.get_tweet(id=id))
     print('\nAutora:')
