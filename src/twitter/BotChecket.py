@@ -71,11 +71,13 @@ class BotChecker:
         entities = tweet['entities']
         urls = entities['urls']
         # urls = tweet.entities['urls']
+        result = {
+            'probability': -1,
+            'description': 'default value'
+        }
         if len(urls) <= 0:
-            result = {
-                'probability': -1,
-                'description': 'Brak URLi w tweecie'
-            }
+            result['probability'] = -1
+            result['description'] = 'Brak URLi w tweecie'
             return result
         for url in urls:
             full_url = url['expanded_url']
@@ -90,25 +92,20 @@ class BotChecker:
                     response = requests.get(full_url, headers=headers)
                     http_code = response.status_code
                     if (http_code / 100) >= 4:
-                        result = {
-                            # nie fake
-                            'probability': 1,
-                            'description': 'Wylaczono machine learning, kod HTTP jest nieprawidlowy'
-                        }
+                        # fake
+                        result['probability'] = 0
+                        result['description'] = 'Wylaczono machine learning, kod HTTP jest nieprawidlowy'
                         return result
                     else:
-                        result = {
-                            # nie fake
-                            'probability': 1,
-                            'description': 'Wylaczono machine learning, kod HTTP jest prawidlowy'
-                        }
-                        return result
+                        # nie fake
+                        result['probability'] = 1
+                        result['description'] = 'Wylaczono machine learning, kod HTTP jest prawidlowy'
                 except:
-                    result = {
-                        # fake
-                        'probability': 0,
-                        'description': 'Wylaczono machine learning, Url nie rzuca bledem ale nieznany jest content url, zwracam prawdo.=0.7'
-                    }
+                    # fake
+                    result['probability'] = 0
+                    result[
+                        'description'] = 'Wylaczono machine learning, Url nie rzuca bledem ale nieznany jest content url'
+                    return result
                 return result
             else:
                 data_machine_learner = UrlMachineLearner()
@@ -117,19 +114,14 @@ class BotChecker:
                 if url_malicious['malicious']:
                     # fake
                     score = 1 - url_malicious['score']
-                    result = {
-                        'probability': score,
-                        'description': 'wlaczono machine learning'
-                    }
+                    result['probability'] = score
+                    result['description'] = 'wlaczono machine learning'
+                    return result
                 else:
                     # nie fake
-
-                    result = {
-                        'probability': url_malicious['score'],
-                        'description': 'wlaczono machine learning'
-                    }
-
-                return result
+                    result['probability'] = url_malicious['score']
+                    result['description'] = 'wlaczono machine learning'
+            return result
 
     # method to be used by other modules
     def is_fake_based_on_user(self, tweetId):
