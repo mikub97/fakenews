@@ -15,6 +15,15 @@ class Fetcher():
     def get_user(self,screen_name):
         return self.users.find_one({'screen_name':screen_name})
 
+    def get_users_last_tweets(self,screename):
+        cursor = self.tweets.find({"connected_with_tweet": screename})
+        connected = []
+        while True:
+            try:
+                connected.append(cursor.next())
+            except StopIteration:
+                return connected
+
     def get_author_of_tweet(self,id):
         tweet = self.get_tweet(id)
         if (tweet == None):
@@ -75,5 +84,3 @@ class Fetcher():
 
 if __name__ == '__main__':
     fetch = Fetcher()
-    fetch.print_stats(id=1133529099530571777)
-    print(fetch.get_replies(1133529099530571777,verified_authors_only=True))

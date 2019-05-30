@@ -11,11 +11,9 @@ if __name__ == '__main__':
     pC = postCredibility()
     result = pC.evaluate(id)
     print(result)
-    """
     print('\nGłówny tweet:')
-    print(fetcher.get_tweet(id=1133699637678870528))
+    print(fetcher.get_tweet(id=id))
     print('\nAutora:')
-    print(fetcher.get_author_of_tweet(id=1133699637678870528))
+    print(fetcher.get_author_of_tweet(id=id))
     print('\n')
     # fetcher.print_users()
-    """
