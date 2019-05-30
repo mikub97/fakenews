@@ -57,7 +57,7 @@ class postCredibility():
         Dict = {'fake': False, 'probability': 1, "description": "lol"}
         pts = 210;
         if fetcher.get_author_of_tweet(id)["verified"]== True:
-            return {"fake": False, "probability":1,"description": "Verified account. Very high chance that tweet is true."}
+            return { "probability":1,"description": "Verified account. Very high chance that tweet is true."}
         if (percentVerifiedComments is not None and percentVerifiedComments > 0.2):
             pts = pts + 100
             Dict["description"] = "Author with verified account. Tweet most likely to be true"
@@ -72,10 +72,7 @@ class postCredibility():
             Dict["description"] = "Tweet is popular. High chance it is not fake."
         else:
             Dict["description"] = "Tweet does not have relevance. Might be fake."
-        if pts < 210:
-            Dict["fake"] = True
         if pts < 105:
-            Dict["fake"] = True
             Dict["description"] = "Tweet is not relevant, and is subjective/has big sentiment"
         pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment)) / 420
         Dict["probability"] = pts
