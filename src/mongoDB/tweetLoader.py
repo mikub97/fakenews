@@ -1,5 +1,7 @@
+import argparse
 import json
 import json as j
+import sys
 
 from tweepy import TweepError
 
@@ -47,6 +49,7 @@ class TweetLoader:
             return
         tweet = None
         try:
+
             tweet = self.api.get_status(id=id, tweet_mode='extended',
                                include_entities=True)
         except Exception:
@@ -194,8 +197,22 @@ class TweetLoader:
 
 # 1133284566632787969
 if __name__ == '__main__':
-    mongo = TweetLoader(restart=False, max_reply=10000)
-    mongo.saveLastTweetsOfAuthor()
+
+    parser = argparse.ArgumentParser(description='Pass an id of a tweet to check')
+    parser.add_argument('-id', dest='id', default=-112,
+                        help='id of tweet for analysis')
+    parser.add_argument('--restart', dest='restart', action='store_const',
+                        const=True, default=False,
+                        help='restarts mongoDB')
+    restart = parser.parse_args().restart
+    id = int(parser.parse_args().id)
+    if id==-112 :
+        parser.print_usage()
+        sys.exit()
+    mongo=TweetLoader(restart=restart,max_reply=100)
+    mongo.saveTweetWithAllData(id, to_print=False,with_authors_of_replies=True, connected_tweets=True,verified_authors_only=True,size_for_bot=15)
+
+
     # Pobieranie konkretnego tweeta, bez autora
     # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 
