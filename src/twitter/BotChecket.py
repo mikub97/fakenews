@@ -163,8 +163,11 @@ def main():
     obj = BotChecker()
     tweets = obj.api.search(q="Donald Trump", tweet_mode='extended', count=20, include_entities=True)
     for tweet in tweets:
+        print('----------->tweet:')
+        print(tweet.full_text)
         print('is fake based on user: ', obj.is_fake_based_on_user(tweet))
         print('is fake based on external urls: ', obj.is_fake_external_urls(tweet, True))
+        print('--------->end of analysis')
 
 
 # Sample invoke
