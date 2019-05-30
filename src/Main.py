@@ -2,6 +2,7 @@ from src.mongoDB.fetcher import Fetcher
 from src.mongoDB.tweetLoader import TweetLoader
 from src.postCredibility import postCredibility
 from src.twitter.BotChecket import BotChecker
+from src.machinelearning.Predictor import Predictor
 if __name__ == '__main__':
     id = 1134114931970838529
     mongo=TweetLoader(restart=True,max_reply=100)
@@ -12,6 +13,9 @@ if __name__ == '__main__':
     pC = postCredibility()
     result = pC.evaluate(id)
     print(result)
+
+    predictor = Predictor()
+    Label_and_truth_prob= predictor.predict('This is example sentence.')
 
     bot_checker = BotChecker()
     is_bot_result = bot_checker.is_fake_based_on_user(id)
