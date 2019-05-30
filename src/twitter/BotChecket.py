@@ -177,9 +177,9 @@ def main():
 # Sample invoke
 if __name__ == '__main__':
     botChecker = BotChecker()
-    main()
-    # print('---------------------------')
-    # tweet = botChecker.api.get_status(id='1134195710256189453', tweet_mode='extended',
-    #                                            include_entities=True)._json
-    # print(tweet)
-    # print('-----------------------------')
+    #main()
+    print('---------------------------')
+    tweet = clearTweetJson(botChecker.api.get_status(id='1134195710256189453', tweet_mode='extended',
+                                               include_entities=True)._json)
+    print(tweet)
+    print('-----------------------------')

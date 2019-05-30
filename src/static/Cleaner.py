@@ -20,7 +20,7 @@ def getTweetSentiments(tweet):
 
 
 def clearTweetJson(json, connected_with_tweet=None):
-    toDeleteAttr = ['metadata', 'quoted_status', 'entities', 'id_str', 'user', 'place', 'favorited', 'retweeted',
+    toDeleteAttr = ['metadata', 'quoted_status', 'id_str', 'user', 'place', 'favorited', 'retweeted',
                     'coordinates', 'contributors', 'source', 'truncated', 'geo', 'in_reply_to_status_id_str',
                     'in_reply_to_user_id', 'in_reply_to_user_id_str', '_id', 'extended_entities', 'retweeted_status',
                     'quoted_status_id_str']
