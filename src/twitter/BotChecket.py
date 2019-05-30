@@ -5,6 +5,7 @@ from textblob import TextBlob
 
 from src.TwitterConncection import TwitterConnection
 from src.twitter.UrlMachineLearner import UrlMachineLearner
+from static.Cleaner import clearTweetJson
 
 
 class BotChecker:
@@ -12,32 +13,33 @@ class BotChecker:
     def __init__(self):
         self.api = TwitterConnection().api
 
-    def parse_tweet(self, tweet, machineLearning):
-        parsed_tweet = {'username': tweet.user.screen_name,
-                        'retweets': tweet.retweet_count,
-                        'isBot': self.isBot(tweet),
-                        'isFakeBasedOnExternalUrl': self.is_fake_external_urls(tweet,
-                                                                               useMachineLearning=machineLearning),
-                        'full_text': tweet.full_text,
-                        'sentiment': self.getTweetSentiment(tweet),
-                        }
-        return parsed_tweet
-
-    def getTweetSentiment(self, tweet):
-        analysis = TextBlob(tweet.full_text)
-        if analysis.sentiment.polarity > 0:
-            return 'positive'
-        elif analysis.sentiment.polarity < 0:
-            return 'negative'
-        else:
-            return 'neutral'
-
-    def get_tweet_sentiment(self, tweet):
-        parsed_tweet = self.parse_tweet(tweet)
-        return parsed_tweet['sentiment']
+    # def parse_tweet(self, tweet, machineLearning):
+    #     parsed_tweet = {'username': tweet.user.screen_name,
+    #                     'retweets': tweet.retweet_count,
+    #                     'isBot': self.isBot(tweet),
+    #                     'isFakeBasedOnExternalUrl': self.is_fake_external_urls(tweet,
+    #                                                                            useMachineLearning=machineLearning),
+    #                     'full_text': tweet.full_text,
+    #                     'sentiment': self.getTweetSentiment(tweet),
+    #                     }
+    #     return parsed_tweet
+    #
+    # def getTweetSentiment(self, tweet):
+    #     analysis = TextBlob(tweet.full_text)
+    #     if analysis.sentiment.polarity > 0:
+    #         return 'positive'
+    #     elif analysis.sentiment.polarity < 0:
+    #         return 'negative'
+    #     else:
+    #         return 'neutral'
+    #
+    # def get_tweet_sentiment(self, tweet):
+    #     parsed_tweet = self.parse_tweet(tweet)
+    #     return parsed_tweet['sentiment']
 
     # Checking if tweet is fake based on frequency of posting the tweets
-    def isBot(self, tweet):
+    def isBot(self, tweetId):
+        tweet = self.api.get_status(tweetId, tweet_mode='extended', include_entities=True)
         if tweet.retweet_count > 0:
             result = {
                 'fake': False,
@@ -87,7 +89,8 @@ class BotChecker:
             return result
 
     # Checking if tweet is fake based on external urls provided in a tweet
-    def is_fake_external_urls(self, tweet, useMachineLearning):
+    def is_fake_external_urls(self, tweetId, useMachineLearning):
+        tweet = self.api.get_status(tweetId, tweet_mode='extended', include_entities=True)
         urls = tweet.entities['urls']
         if len(urls) <= 0:
             result = {
@@ -150,12 +153,12 @@ class BotChecker:
                 return result
 
     # method to be used by other modules
-    def is_fake_based_on_user(self, tweet):
-        return self.isBot(tweet)
+    def is_fake_based_on_user(self, tweetId):
+        return self.isBot(tweetId)
 
     # method to be used by other modules
-    def is_fake_based_on_external_urls(self, tweet, isMachineLearning):
-        return self.is_fake_external_urls(tweet, isMachineLearning)
+    def is_fake_based_on_external_urls(self, tweetId, isMachineLearning):
+        return self.is_fake_external_urls(tweetId, isMachineLearning)
 
 
 # Sample invoke
@@ -164,12 +167,19 @@ def main():
     tweets = obj.api.search(q="Donald Trump", tweet_mode='extended', count=20, include_entities=True)
     for tweet in tweets:
         print('----------->tweet:')
+        print(tweet.id)
         print(tweet.full_text)
-        print('is fake based on user: ', obj.is_fake_based_on_user(tweet))
-        print('is fake based on external urls: ', obj.is_fake_external_urls(tweet, True))
+        print('is fake based on user: ', obj.is_fake_based_on_user(tweet.id))
+        print('is fake based on external urls: ', obj.is_fake_external_urls(tweet.id, True))
         print('--------->end of analysis')
 
 
 # Sample invoke
 if __name__ == '__main__':
+    botChecker = BotChecker()
     main()
+    # print('---------------------------')
+    # tweet = botChecker.api.get_status(id='1134195710256189453', tweet_mode='extended',
+    #                                            include_entities=True)._json
+    # print(tweet)
+    # print('-----------------------------')
