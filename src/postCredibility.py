@@ -52,17 +52,37 @@ class postCredibility():
         tweetAuthor = fetcher.get_author_of_tweet(tweetJson["id"])
         numOfFollowers = tweetAuthor["followers_count"]
         numOfRT = tweetJson['retweet_count']
-        
         print(numOfFollowers, numOfFavs, numOfRT)
         Dict = {"FakeProbability":0, "Details":"lol"}
         pts = 210;
-        if (percentVerifiedComments > 0.2): pts = pts + 100
+        if (percentVerifiedComments > 0.2):
+            pts = pts + 100
+            Dict["Details"] = "Author with verified account. Tweet most likely to be true"
         if numOfFavs > 10:
+            Dict["Details"] = "Tweet is popular. High chance it is not fake."
             pts = pts + 70
-        if numOfRT > 100: pts = pts + 80
-        if numOfFollowers > 1000: pts = pts + 80
-        if pts > 250: Dict["Details"] = "Tweet is popular. High chance it is not fake."
-        else: Dict["Details"] = "Tweet does not have relevance. It is in risk group."
+        if numOfRT > 100:
+            pts = pts + 80
+            Dict["Details"] = "Tweet is popular. High chance it is not fake."
+        if numOfFollowers > 1000:
+            pts = pts + 80
+            Dict["Details"] = "Tweet is popular. High chance it is not fake."
+        else: Dict["Details"] = "Tweet does not have relevance. Might be fake."
         pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment))/420
         Dict["FakeProbability"] = 1-pts
+        if pts<105:
+            Dict["Details"] = "Tweet is not relevant, and is subjective/has big sentiment"
+
         return Dict
+
+    def verifyUser(id):
+        user = Fetcher().get_user(id)
+        out = {'verified' : False,
+               'credibility': 0.0}
+        if user['verified']==True:
+            out['verified']=True
+            out['credibility']=1.0
+            return out
+        else :
+            out['verified'] = False
+            out['credibility'] = 1.0
