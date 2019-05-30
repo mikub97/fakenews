@@ -19,7 +19,7 @@ class BotChecker:
         if retweet > 0:
             result = {
                 # nie fake
-                'probability': 0,
+                'probability': 1,
                 'description': 'Tweet był retweetowany - to nie jest bot'
             }
             return result
@@ -34,7 +34,7 @@ class BotChecker:
             if len(last_tweets) < 10:
                 result = {
                     # fake
-                    'probability': 0.7,
+                    'probability': 0.3,
                     'description': 'User nie opublikowal 10 tweetow - uznajemy za bota'
                 }
                 return result
@@ -51,17 +51,17 @@ class BotChecker:
                         five_days = datetime.timedelta(days=5)
                         if (tweet_date - current_tweet_date) < two_days:
                             # nie fake
-                            result['probability'] = 0
+                            result['probability'] = 1
                             result['description'] = 'User publikuje z czestotliwoscia wieksza niz dwa dni - to nie ' \
                                                     'jest bot '
                         elif two_days < (tweet_date - current_tweet_date) < five_days:
                             # fake
-                            result['probability'] = 0.6
+                            result['probability'] = 0.4
                             result['description'] = 'User nie publikowal nic przez 3,4 lub 5 dni - uzanje za bota z ' \
                                                     'prawd.=0.6 '
                         else:
                             # fake
-                            result['probability'] = 0.9
+                            result['probability'] = 0.1
                             result['description'] = 'User ma odstep miedzy tweetami wiekszy niz 5 dni - uznaje ' \
                                                     'za bota z prawd.=0.8 '
             return result
@@ -116,15 +116,16 @@ class BotChecker:
 
                 if url_malicious['malicious']:
                     # fake
+                    score = 1 - url_malicious['score']
                     result = {
-                        'probability': url_malicious['score'],
+                        'probability': score,
                         'description': 'wlaczono machine learning'
                     }
                 else:
                     # nie fake
-                    score = 1 - url_malicious['score']
+
                     result = {
-                        'probability': score,
+                        'probability': url_malicious['score'],
                         'description': 'wlaczono machine learning'
                     }
 
