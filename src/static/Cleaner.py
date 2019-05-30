@@ -29,8 +29,6 @@ def getKeyWords(text):
     wlasne = nazwy_wlasne(text)
     strings = ' '.join(wlasne)
     strings = ' '.join(word for word in strings.split() if len(word) > 2)  # dluzsze niz 2 litery
-    strings = strings.split()[:4]  # 4 pierwsze slowa
-    strings = ' '.join(strings)
     return strings
 
 def clearTweetJson(json, connected_with_tweet=None):

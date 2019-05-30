@@ -8,9 +8,9 @@ if __name__ == '__main__':
     mongo.saveTweetWithAllData(id, to_print=False,with_authors_of_replies=True, connected_tweets=True,verified_authors_only=True)
     fetcher = Fetcher()
     #fetcher.print_stats()
-    # pC = postCredibility()
-    # result = pC.evaluate(id)
-    # print(result)
+    pC = postCredibility()
+    result = pC.evaluate(id)
+    print(result)
     """
     print('\nGłówny tweet:')
     print(fetcher.get_tweet(id=1133699637678870528))

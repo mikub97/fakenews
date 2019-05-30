@@ -101,7 +101,7 @@ class TweetLoader:
 
     # Zapisuje Tweety, które są poszukując ich na zasadzie wystąpywania słów, można zaostrzyć filtrem tylko zweryfikowani autorzy
     def saveTweetsWithWords(self, words, connected_with_tweet=None,verified_authors_only=False, with_authors=False,
-                            to_print=False):
+                            to_print=False,limit=10):
         words = words + "-filter:retweets"
         cursor = tweepy.Cursor(self.api.search, q=words, lang='en', result_type='recent',tweet_mode="extended", timeout=999999).items(limit)
         tweets = []
