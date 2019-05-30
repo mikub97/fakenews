@@ -72,7 +72,7 @@ class TweetLoader:
         self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
 
     def saveLastTweetsOfAuthor(self, screen_name,to_print=False,size_for_bot=10):
-        timeline =self.api.user_timeline(screen_name=screen_name, count=10, tweet_mode='extended',
+        timeline =self.api.user_timeline(screen_name=screen_name, count=size_for_bot, tweet_mode='extended',
                                include_entities=True)
         tweets_count = self.tweets.count()
         for tweet in timeline:
