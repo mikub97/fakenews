@@ -13,6 +13,14 @@ class Predictor:
 
         prediction = load_model.predict(DataLoader.stem(var))
         prob = load_model.predict_proba(DataLoader.stem(var))
+        answ = {}
+        if prediction[0] == 'True':
+            answ['description'] = 'ML model DO NOT classify this as a Fake News.'
+        else:
+            answ['description'] = 'ML model classify this as a Fake News.'
+        answ['probability'] = prob[0][0]
+	
+        return (answ)
 
-        return ((prediction[0],prob[0][1]))
+
 
