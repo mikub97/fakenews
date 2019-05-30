@@ -14,33 +14,34 @@ class BotChecker:
         self.api = TwitterConnection().api
         self.fetcher = Fetcher()
 
-    def parse_tweet(self, tweet, machineLearning):
-        parsed_tweet = {'username': tweet.user.screen_name,
-                        'retweets': tweet.retweet_count,
-                        'isBot': self.isBot(tweet),
-                        'isFakeBasedOnExternalUrl': self.is_fake_external_urls(tweet,
-                                                                               useMachineLearning=machineLearning),
-                        'full_text': tweet.full_text,
-                        'sentiment': self.getTweetSentiment(tweet),
-                        }
-        return parsed_tweet
-
-    def getTweetSentiment(self, tweet):
-        analysis = TextBlob(tweet.full_text)
-        if analysis.sentiment.polarity > 0:
-            return 'positive'
-        elif analysis.sentiment.polarity < 0:
-            return 'negative'
-        else:
-            return 'neutral'
-
-    def get_tweet_sentiment(self, tweet):
-        parsed_tweet = self.parse_tweet(tweet)
-        return parsed_tweet['sentiment']
+    # def parse_tweet(self, tweet, machineLearning):
+    #     parsed_tweet = {'username': tweet.user.screen_name,
+    #                     'retweets': tweet.retweet_count,
+    #                     'isBot': self.isBot(tweet),
+    #                     'isFakeBasedOnExternalUrl': self.is_fake_external_urls(tweet,
+    #                                                                            useMachineLearning=machineLearning),
+    #                     'full_text': tweet.full_text,
+    #                     'sentiment': self.getTweetSentiment(tweet),
+    #                     }
+    #     return parsed_tweet
+    #
+    # def getTweetSentiment(self, tweet):
+    #     analysis = TextBlob(tweet.full_text)
+    #     if analysis.sentiment.polarity > 0:
+    #         return 'positive'
+    #     elif analysis.sentiment.polarity < 0:
+    #         return 'negative'
+    #     else:
+    #         return 'neutral'
+    #
+    # def get_tweet_sentiment(self, tweet):
+    #     parsed_tweet = self.parse_tweet(tweet)
+    #     return parsed_tweet['sentiment']
 
     # Checking if tweet is fake based on frequency of posting the tweets
     def isBot(self, tweet):
-        if tweet.retweet_count > 0:
+        retweet = tweet['retweet_count']
+        if retweet > 0:
             result = {
                 'fake': False,
                 'probability': 1,
@@ -48,7 +49,8 @@ class BotChecker:
             }
             return result
         else:
-            user_name = tweet.user.screen_name
+            user = tweet['user']
+            user_name = user['screen_name']
             # last_tweets = self.api.user_timeline(screen_name=user_name, count=10, tweet_mode='extended',
             #                                      include_entities=True)
 
@@ -92,7 +94,9 @@ class BotChecker:
 
     # Checking if tweet is fake based on external urls provided in a tweet
     def is_fake_external_urls(self, tweet, useMachineLearning):
-        urls = tweet.entities['urls']
+        entities = tweet['urls']
+        urls = entities['urls']
+        # urls = tweet.entities['urls']
         if len(urls) <= 0:
             result = {
                 'fake': 'default value',
