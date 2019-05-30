@@ -1,5 +1,4 @@
 import re
-
 import pymongo
 
 class Fetcher():
@@ -18,6 +17,8 @@ class Fetcher():
 
     def get_author_of_tweet(self,id):
         tweet = self.get_tweet(id)
+        if (tweet == None):
+            return None
         return self.users.find_one({'screen_name':tweet['screen_name']})
 
     def get_connected(self,id):

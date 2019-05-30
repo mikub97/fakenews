@@ -1,6 +1,5 @@
 import json
 import re
-
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from nltk.tokenize import RegexpTokenizer
@@ -13,11 +12,26 @@ def clean_tweet(tweet):
                            " ",
                            tweet).split())
 
-
 def getTweetSentiments(tweet):
     analysis = TextBlob(clean_tweet(tweet))
     return analysis.sentiment.polarity
 
+
+def nazwy_wlasne(text):
+    text = clean_tweet(text)
+    tokenizer = RegexpTokenizer(r'\w+')
+    tokens = tokenizer.tokenize(text)
+    tagged_sent = pos_tag(tokens)
+    propernouns = [word for word, pos in tagged_sent if pos == 'NNP']
+    return propernouns
+
+def getKeyWords(text):
+    wlasne = nazwy_wlasne(text)
+    strings = ' '.join(wlasne)
+    strings = ' '.join(word for word in strings.split() if len(word) > 2)  # dluzsze niz 2 litery
+    strings = strings.split()[:4]  # 4 pierwsze slowa
+    strings = ' '.join(strings)
+    return strings
 
 def clearTweetJson(json, connected_with_tweet=None):
     toDeleteAttr = ['metadata', 'quoted_status', 'entities', 'id_str', 'user', 'place', 'favorited', 'retweeted',
@@ -58,7 +72,7 @@ def clearTweetJson(json, connected_with_tweet=None):
 
 
 def clearUserJson(json):
-    toDeleteAttr = ['metadata', 'quoted_status', 'entities', 'id_str', 'user', 'place', 'favorited', 'retweeted',
+    toDeleteAttr = ['metadata', 'quoted_status', 'id_str', 'user', 'place', 'favorited', 'retweeted',
                     'coordinates', 'contributors', 'source', 'truncated', 'geo', 'in_reply_to_status_id_str',
                     'in_reply_to_user_id', 'in_reply_to_user_id_str', '_id', 'extended_entities', 'retweeted_status',
                     'quoted_status_id_str', 'default_profile_image', 'status', "notifications",
@@ -95,12 +109,4 @@ def process_words(text):
 
     return wordsFiltered
 
-def nazwy_wlasne(text):
-    text = clean_tweet(text)
-    tokenizer = RegexpTokenizer(r'\w+')
-    tokens = tokenizer.tokenize(text)
-    tagged_sent = pos_tag(tokens)
-
-    propernouns = [word for word, pos in tagged_sent if pos == 'NNP']
-    return propernouns
 

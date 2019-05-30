@@ -72,23 +72,10 @@ class TweetLoader:
         self.saveReplies(tweet, to_print=to_print, with_author=with_authors_of_replies)
 
     # Zapisuje Odpowiedzi do tweeta  ------- argument tweet to FAKTYCZNIE TWEET, NIE ID
-    # def saveReplies(self,tweet,to_print=False,with_author=False):
-    #     before_count =self.tweets.count()
-    #     i=0
-    #     cursor = tweepy.Cursor(tweepy.api.search, q='to:'+tweet['screen_name'],
-    #                             since_id=tweet['id']).items()
-    #     for reply in cursor:
-    #         if i>=self.max_reply:
-    #             break
-    #         if (reply._json['in_reply_to_status_id']==tweet['id']):
-    #             self.saveTweet(reply._json['id'],to_print=to_print,with_author=with_author)
-    #
-    #     if (to_print):
-    #         print((self.tweets.count()-before_count).__str__()+' replies added\n')
     def saveReplies(self, tweet, to_print=False, with_author=False):
         before_count = self.tweets.count()
         i = 0
-        cursor = tweepy.Cursor(self.api.search, q='to:' + tweet['screen_name'].__str__(),
+        cursor = tweepy.Cursor(self.api.search, q='to:' + tweet['screen_name']+''.__str__(),
                                since_id=tweet['id'],
                                result_type='recent',
                                limit=self.max_reply).items()  # Dlaczego tak mało zwraca odpowiedzi !! ?? Przez result_type
@@ -172,26 +159,19 @@ class TweetLoader:
         self.saveTweetWithAllData(id=id, with_authors_of_replies=with_authors_of_replies, to_print=to_print)
         tweet_count_middle = self.tweets.count()
         user_count_middle = self.tweets.count()
+
         if connected_tweets:
             text = self.tweets.find_one({'id': id})['full_text']
-
-            nazwy_wlasne = Cleaner.nazwy_wlasne(text)
-            string = ' '.join(nazwy_wlasne)
-            string = ' '.join(word for word in string.split() if len(word) > 2) # dluzsze niz 2 litery
-            string = string.split()[:4] # 4 pierwsze slowa
-            string = ' '.join(string)
-            print(string)
-            self.saveTweetsWithWords(string, connected_with_tweet=id, limit=10,
+            self.saveTweetsWithWords(Cleaner.getKeyWords(text), connected_with_tweet=id, limit=10,
                                      verified_authors_only=verified_authors_only, to_print=to_print,
                                      with_authors=with_authors_of_replies)
         tweet_count_end = self.tweets.count()
         user_count_end = self.tweets.count()
         if to_print:
             print()
-            print("There are " + tweet_count_end.__str__() + " tweets in the DB")
-            print("There are " + user_count_end.__str__() + " users in the DB")
-        print((tweet_count_end - tweet_count_middle).__str__() + " connected tweets")
-
+            print((tweet_count_end-tweet_count_before).__str__() + " tweets added into the DB")
+            print((user_count_end-user_count_before).__str__() + " users added into the DB")
+            print((tweet_count_end - tweet_count_middle).__str__() + " connected tweets")
 
 # 1133284566632787969
 if __name__ == '__main__':
