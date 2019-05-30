@@ -26,7 +26,7 @@ class postCredibility():
         sentimentComments = 0;
         subjectivityComments = 0
         i = 0
-
+        #
         repliesJson = fetcher.get_replies(id)
         if repliesJson:
             for reply in repliesJson:

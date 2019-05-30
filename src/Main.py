@@ -12,6 +12,7 @@ if __name__ == '__main__':
     result = pC.evaluate(id)
     print(result)
     """
+    
     print('\nGłówny tweet:')
     print(fetcher.get_tweet(id=1133699637678870528))
     print('\nAutora:')
