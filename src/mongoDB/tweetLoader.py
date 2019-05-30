@@ -71,20 +71,6 @@ class TweetLoader:
         self.saveUser(tweet['screen_name'], to_print=to_print)
         self.saveReplies(tweet, to_print=to_print, with_author=with_authors_of_replies)
 
-    # Zapisuje Odpowiedzi do tweeta  ------- argument tweet to FAKTYCZNIE TWEET, NIE ID
-    # def saveReplies(self,tweet,to_print=False,with_author=False):
-    #     before_count =self.tweets.count()
-    #     i=0
-    #     cursor = tweepy.Cursor(tweepy.api.search, q='to:'+tweet['screen_name'],
-    #                             since_id=tweet['id']).items()
-    #     for reply in cursor:
-    #         if i>=self.max_reply:
-    #             break
-    #         if (reply._json['in_reply_to_status_id']==tweet['id']):
-    #             self.saveTweet(reply._json['id'],to_print=to_print,with_author=with_author)
-    #
-    #     if (to_print):
-    #         print((self.tweets.count()-before_count).__str__()+' replies added\n')
     def saveReplies(self, tweet, to_print=False, with_author=False):
         before_count = self.tweets.count()
         i = 0
@@ -114,14 +100,14 @@ class TweetLoader:
             print((self.tweets.count() - before_count).__str__() + ' replies added\n')
 
     # Zapisuje Tweety, które są poszukując ich na zasadzie wystąpywania słów, można zaostrzyć filtrem tylko zweryfikowani autorzy
-    def saveTweetsWithWords(self, words, connected_with_tweet=id, limit=5,
-                            verified_authors_only=False, with_authors=False, to_print=False):
+    def saveTweetsWithWords(self, words, connected_with_tweet=None,verified_authors_only=False, with_authors=False,
+                            to_print=False):
         words = words + "-filter:retweets"
         cursor = tweepy.Cursor(self.api.search, q=words, lang='en', result_type='recent',tweet_mode="extended", timeout=999999).items(limit)
         tweets = []
         i = 0
         while True:
-            if i >= limit:
+            if i >= self.max_reply:
                 return tweets
             try:
                 tweet = cursor.next()
@@ -135,7 +121,8 @@ class TweetLoader:
                         self.tweets.insert_one(tweet)
                         if (to_print):
                             print("Tweet :")
-                            print(tweet["full_text"],print["screen_name"])
+                            print(tweet["full_text"])
+                            print(["screen_name"])
                             print("is saved")
                         if (with_authors):
                             self.users.insert_one(user)
@@ -165,39 +152,41 @@ class TweetLoader:
         tweet = self.api.get_status(id=id, tweet_mode='extended')
         self.users.insert_one(clearUserJson(self.api.get_user(screen_name=tweet.author.screen_name)))
 
-    def loadDataForTweet(self, id, to_print=False, with_authors_of_replies=False, connected_tweets=True,
-                         with_connected_tweets=False, verified_authors_only=False):
+
+        # Zapisuje Tweet, replies, author(opcjonalnie),  authors of replies (opcjonalnie)
+
+    def saveTweetWithAllData(self, id=-1, to_print=False, with_author=True, with_authors_of_replies=False,
+                                 connected_tweets=False,
+                                 verified_authors_only=True):
         tweet_count_before = self.tweets.count()
         user_count_before = self.tweets.count()
-        self.saveTweetWithAllData(id=id, with_authors_of_replies=with_authors_of_replies, to_print=to_print)
-        tweet_count_middle = self.tweets.count()
-        user_count_middle = self.tweets.count()
+
+        self.saveTweet(id, to_print=to_print, with_author=with_author)
+        tweet = self.tweets.find_one({'id': id})
+        self.saveReplies(tweet, to_print=to_print, with_author=with_authors_of_replies)
+        if tweet !=None :
+            if to_print:
+                print('Tweet to check, with id ' + id.__str__() + ', is saved')
+        else:
+            print("Failed do save tweet with all data. There is no post with id " +id.__str__())
+            return
+        replies_count = self.tweets.count()-tweet_count_before-1
         if connected_tweets:
-            text = self.tweets.find_one({'id': id})['full_text']
-
-            nazwy_wlasne = Cleaner.nazwy_wlasne(text)
-            string = ' '.join(nazwy_wlasne)
-            string = ' '.join(word for word in string.split() if len(word) > 2) # dluzsze niz 2 litery
-            #string = string.split()[:4] # 4 pierwsze slowa
-            #string = ' '.join(string)
-
-            print(string)
-            self.saveTweetsWithWords(string, connected_with_tweet=id, limit=10,
-                                     verified_authors_only=verified_authors_only, to_print=to_print,
-                                     with_authors=with_authors_of_replies)
-        tweet_count_end = self.tweets.count()
-        user_count_end = self.tweets.count()
-        if to_print:
+           text = self.tweets.find_one({'id': id})['full_text']
+           self.saveTweetsWithWords(Cleaner.getKeyWords(text), connected_with_tweet=id,
+                    verified_authors_only=verified_authors_only, to_print=to_print,with_authors=with_authors_of_replies)
+        connected_tweets_count = self.tweets.count() - replies_count-1
+        if True:
             print()
-            print("There are " + tweet_count_end.__str__() + " tweets in the DB")
-            print("There are " + user_count_end.__str__() + " users in the DB")
-        print((tweet_count_end - tweet_count_middle).__str__() + " connected tweets")
+            print((self.tweets.count() - tweet_count_before).__str__() + " tweets added into the DB")
+            print((self.users.count() - user_count_before).__str__() + " users added into the DB")
+            print(connected_tweets_count.__str__() + " connected tweets")
+
 
 
 # 1133284566632787969
 if __name__ == '__main__':
     mongo = TweetLoader(restart=True, max_reply=10000)
-    mongo.loadDataForTweet(id=-1, to_print=True, with_authors_of_replies=True, with_connected_tweets=True)
     # Pobieranie konkretnego tweeta, bez autora
     # mongo.saveTweet(id=1133184409127989248,to_print=True,with_author=False)
 
