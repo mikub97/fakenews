@@ -1,8 +1,6 @@
 import pymongo
-from bson.json_util import dumps
 from src.mongoDB.fetcher import Fetcher
 from src.static import Cleaner
-import src.static.Cleaner
 from src.mongoDB.tweetLoader import TweetLoader
 
 
@@ -36,47 +34,48 @@ class postCredibility():
                 subjectivityComments = subjectivityComments + Cleaner.getTweetSubjectivity(replyText)
             meanSentimentComments = sentimentComments / i
             meanSubjectivityComments = subjectivityComments / i
-            print("Mean comments subjectivity: ", meanSubjectivityComments, "Mean comments Sentiment: ",
-                  meanSentimentComments)
-        print("Sentiment: ", tweetSentiment, "Subjectivity: ", tweetSubjectivity)
+            #print("Mean comments subjectivity: ", meanSubjectivityComments, "Mean comments Sentiment: ",
+                  #meanSentimentComments)
+        #print("Sentiment: ", tweetSentiment, "Subjectivity: ", tweetSubjectivity)
 
         connectedTweets = fetcher.get_connected(id)
         i = 0
-        for connectedTweet in connectedTweets:
-            author = fetcher.get_author_of_tweet(connectedTweet["id"])
-            #print(connectedTweet["full_text"])
-            if str(author["verified"]) == "True":
-                i = i + 1
-        percentVerifiedComments = i / len(connectedTweets)
-        #print("Percent verified users with similar tweet: ", i / (len(connectedTweets)))
+
+        if(connectedTweets):
+            for connectedTweet in connectedTweets:
+                author = fetcher.get_author_of_tweet(connectedTweet["id"])
+                #print(connectedTweet["full_text"])
+                if str(author["verified"]) == "True":
+                    i = i + 1
+            percentVerifiedComments = i / len(connectedTweets)
+
         numOfFavs = tweetJson["favorite_count"]
         tweetAuthor = fetcher.get_author_of_tweet(tweetJson["id"])
         numOfFollowers = tweetAuthor["followers_count"]
         numOfRT = tweetJson['retweet_count']
-        #print(numOfFollowers, numOfFavs, numOfRT)
-        Dict = {"FakeProbability": 0, "Details": "lol"}
+
+        Dict = {'fake': False, 'probability': 1, "description": "lol"}
         pts = 210;
         if fetcher.get_author_of_tweet(id)["verified"]== True:
-            return {"FakeProbability": 0, "Details": "Verified account. Very high chance that tweet is true."}
-        if (percentVerifiedComments > 0.2):
+            return { "probability":1,"description": "Verified account. Very high chance that tweet is true."}
+        if (percentVerifiedComments is not None and percentVerifiedComments > 0.2):
             pts = pts + 100
-            Dict["Details"] = "Author with verified account. Tweet most likely to be true"
+            Dict["description"] = "Author with verified account. Tweet most likely to be true"
         if numOfFavs > 10:
-            Dict["Details"] = "Tweet is popular. High chance it is not fake."
+            Dict["description"] = "Tweet is popular. High chance it is not fake."
             pts = pts + 70
         if numOfRT > 100:
             pts = pts + 80
-            Dict["Details"] = "Tweet is popular. High chance it is not fake."
+            Dict["description"] = "Tweet is popular. High chance it is not fake."
         if numOfFollowers > 1000:
             pts = pts + 80
-            Dict["Details"] = "Tweet is popular. High chance it is not fake."
+            Dict["description"] = "Tweet is popular. High chance it is not fake."
         else:
-            Dict["Details"] = "Tweet does not have relevance. Might be fake."
-        pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment)) / 420
-        Dict["FakeProbability"] = 1 - pts
+            Dict["description"] = "Tweet does not have relevance. Might be fake."
         if pts < 105:
-            Dict["Details"] = "Tweet is not relevant, and is subjective/has big sentiment"
-
+            Dict["description"] = "Tweet is not relevant, and is subjective/has big sentiment"
+        pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment)) / 420
+        Dict["probability"] = pts
         return Dict
 
 
