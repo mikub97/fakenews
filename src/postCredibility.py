@@ -42,23 +42,25 @@ class postCredibility():
 
         connectedTweets = fetcher.get_connected(id)
         i = 0
-        for connectedTweet in connectedTweets:
-            author = fetcher.get_author_of_tweet(connectedTweet["id"])
-            #print(connectedTweet["full_text"])
-            if str(author["verified"]) == "True":
-                i = i + 1
-        percentVerifiedComments = i / len(connectedTweets)
-        #print("Percent verified users with similar tweet: ", i / (len(connectedTweets)))
+
+        if(connectedTweets):
+            for connectedTweet in connectedTweets:
+                author = fetcher.get_author_of_tweet(connectedTweet["id"])
+                #print(connectedTweet["full_text"])
+                if str(author["verified"]) == "True":
+                    i = i + 1
+            percentVerifiedComments = i / len(connectedTweets)
+
         numOfFavs = tweetJson["favorite_count"]
         tweetAuthor = fetcher.get_author_of_tweet(tweetJson["id"])
         numOfFollowers = tweetAuthor["followers_count"]
         numOfRT = tweetJson['retweet_count']
-        #print(numOfFollowers, numOfFavs, numOfRT)
+
         Dict = {"FakeProbability": 0, "Details": "lol"}
         pts = 210;
         if fetcher.get_author_of_tweet(id)["verified"]== True:
             return {"FakeProbability": 0, "Details": "Verified account. Very high chance that tweet is true."}
-        if (percentVerifiedComments > 0.2):
+        if (percentVerifiedComments is not None and percentVerifiedComments > 0.2):
             pts = pts + 100
             Dict["Details"] = "Author with verified account. Tweet most likely to be true"
         if numOfFavs > 10:
