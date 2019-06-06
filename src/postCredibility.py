@@ -1,4 +1,5 @@
 import pymongo
+
 from src.mongoDB.fetcher import Fetcher
 from src.static import Cleaner
 from src.mongoDB.tweetLoader import TweetLoader
@@ -13,11 +14,11 @@ class postCredibility():
         self.users = self.mydb['users']
 
     def evaluate(self, id):
+        percentVerifiedComments = None
         mongo = TweetLoader(restart=False)
         fetcher = Fetcher()
         tweetJson = fetcher.get_tweet(id)
 
-        #print(tweetJson)
         text = tweetJson["full_text"]
         tweetSentiment = Cleaner.getTweetSentiments(text)
         tweetSubjectivity = Cleaner.getTweetSubjectivity(text)
@@ -56,8 +57,7 @@ class postCredibility():
 
         Dict = {'fake': False, 'probability': 1, "description": "lol"}
         pts = 210;
-        if fetcher.get_author_of_tweet(id)["verified"]== True:
-            return { "probability":1,"description": "Verified account. Very high chance that tweet is true."}
+        #print(tweetSentiment , "sentiment")
         if (percentVerifiedComments is not None and percentVerifiedComments > 0.2):
             pts = pts + 100
             Dict["description"] = "Author with verified account. Tweet most likely to be true"
@@ -72,9 +72,10 @@ class postCredibility():
             Dict["description"] = "Tweet is popular. High chance it is not fake."
         else:
             Dict["description"] = "Tweet does not have relevance. Might be fake."
-        if pts < 105:
-            Dict["description"] = "Tweet is not relevant, and is subjective/has big sentiment"
-        pts = (pts - abs(tweetSubjectivity * 105) - abs(105 * tweetSentiment)) / 420
+        pts = (pts - abs(tweetSubjectivity * 105*3) - abs(105 * tweetSentiment*3)) / 420
+        if pts < 0.5:
+            Dict["description"] = "Tweet is subjective/has big sentiment"
+        if pts <0: pts = 0
         Dict["probability"] = pts
         return Dict
 

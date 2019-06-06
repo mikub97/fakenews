@@ -25,6 +25,7 @@ class Fetcher():
                 return connected
 
     def get_author_of_tweet(self,id):
+        id=int(id)
         tweet = self.get_tweet(id)
         if (tweet == None):
             return None

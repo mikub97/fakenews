@@ -1,6 +1,6 @@
 import joblib
 from src.machinelearning import DataLoader
-from src.mongoDB import Fetcher
+from src.mongoDB.fetcher import Fetcher
 
 
 class Predictor:
@@ -17,9 +17,9 @@ class Predictor:
         prob = load_model.predict_proba(input)
         answ = {}
         if prediction[0] == 'True':
-            answ['description'] = 'ML model DO NOT classify this as a Fake News.'
+            answ['description'] = 'ML model DOES NOT classify this as a Fake News.'
         else:
-            answ['description'] = 'ML model classify this as a Fake News.'
+            answ['description'] = 'ML model classifies this as a Fake News.'
         answ['probability'] = prob[0][0]
 
         return (answ)
