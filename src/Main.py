@@ -1,5 +1,8 @@
 import sys
 import csv
+import joblib
+
+from src.machinelearning import DataLoader
 from src.machinelearning.Predictor import Predictor
 from src.mongoDB.fetcher import Fetcher
 from src.mongoDB.tweetLoader import TweetLoader
@@ -24,22 +27,62 @@ if __name__ == '__main__':
                         const=True, default=False,
                         help='if set there will be no more tweets loaded from twitter')
     anal = parser.parse_args().anal
+    f = open("test.txt", "r")
     restart = parser.parse_args().restart
     id = int(parser.parse_args().id)
-    f = open("onion.txt", "r")
     fetcher = Fetcher()
     pC = postCredibility()
     predictor = Predictor()
     bot_checker = BotChecker()
+    """
     if id==-112 :
         parser.print_usage()
         sys.exit()
     if (not anal):
         mongo=TweetLoader(restart=restart,max_reply=100)
         mongo.saveTweetWithAllData(id, to_print=False,with_authors_of_replies=True, connected_tweets=True,verified_authors_only=True,size_for_bot=15)
+    """
+    TrueNegative = 0;
+    FalsePositive = 0;
+    FalseNegative = 0;
+    TruePositive = 0;
+    for line in f:
+
+        line = line.split(" ")
+        x = line[0]
+        y = int(line[1])
+        print(x,y)
+        x = int(x)
+
+        mongo = TweetLoader(restart=restart, max_reply=10)
+        mongo.saveTweetWithAllData(id=x, to_print=False, with_authors_of_replies=True, connected_tweets=True,
+                                   verified_authors_only=True, size_for_bot=15)
+        result = pC.evaluate(x)
+        # print(result)
+        Label_and_truth_prob = predictor.predict(x)
+        # print(Label_and_truth_prob)
+        #is_bot_result = bot_checker.is_fake_based_on_user(id)
+        malicious_urls_machine_learning = bot_checker.is_fake_based_on_external_urls(x, True)
+        #malicious_urls = bot_checker.is_fake_based_on_external_urls(id, False)
+        load_model = joblib.load('judger.sav')
+        input = [[result["probability"],Label_and_truth_prob["probability"],malicious_urls_machine_learning["probability"]]]
+        prediction = load_model.predict(input)
+        #prob = load_model.predict_proba(input)
+        print(prediction[0])
+        if prediction[0] == 1 and y == 0:
+            TrueNegative+=1
+            print('True negative.', TrueNegative)
+        elif prediction[0] == 1 and y == 1:
+            TruePositive+=1
+            print('True positive.', TruePositive)
+        elif prediction[0] == 0 and y == 1:
+            FalseNegative+=1
+            print('False negative.', FalseNegative)
+        else:
+            FalsePositive+=1
+            print('False positive.', FalsePositive)
 
 
-    fetcher = Fetcher()
 
    
     
@@ -52,9 +95,11 @@ if __name__ == '__main__':
     # print(fetcher.get_author_of_tweet(id=id))
     # print('\n')
     # # fetcher.print_users()
-    """ 
-    with open('onion.csv', mode='w', newline='') as onion:
-        onion_writer = csv.writer(onion, delimiter=',')
+
+
+    """
+    with open('true.csv', mode='w', newline='') as onion:
+        onion_writer = csv.writer(onion, delimiter='|')
 
         for x in f:
             x=int(x)
@@ -74,5 +119,5 @@ if __name__ == '__main__':
                                    Label_and_truth_prob["probability"],
                                    malicious_urls_machine_learning["probability"]])
             print("saved to csv")
-
     """
+
